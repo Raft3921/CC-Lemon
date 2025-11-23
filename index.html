@@ -8,7 +8,7 @@
     :root {
       --yellow: #f5c000;
       --blue: #1f2fe6;
-      --red: #f01f1f;
+      --red: #ff0000;
       --accent: #0ae2ff;
       --ink: #0b1720;
     }
@@ -86,6 +86,14 @@
 </head>
 <body>
   <canvas id="scene"></canvas>
+  <div id="start-screen" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:5;">
+    <div style="background:#fff8d0;border-radius:16px;padding:18px 22px;box-shadow:0 12px 30px rgba(0,0,0,0.4);display:grid;gap:10px;min-width:240px;text-align:center;font-weight:800;color:#0b1720;">
+      <div style="font-size:1.2rem;">モード選択</div>
+      <button id="btn-1p" style="padding:10px 12px;font-size:1.05rem;border:none;border-radius:10px;background:#1f2fe6;color:#fff;cursor:pointer;">1人プレイ</button>
+      <button id="btn-2p" style="padding:10px 12px;font-size:1.05rem;border:none;border-radius:10px;background:#f01f1f;color:#fff;cursor:pointer;">2人プレイ</button>
+      <div style="font-size:0.9rem;font-weight:600;color:#333;">1P: A/S/D ｜ 2P: ;/:/]</div>
+    </div>
+  </div>
   <div id="hud">
     <div></div>
     <div id="call">Enter</div>
@@ -173,6 +181,11 @@
       chargeGroup.position.set(0, 3.8, 0);
       group.add(chargeGroup);
 
+      const label = makeLabelSprite("1P");
+      label.position.set(0, 4.4, 0);
+      label.name = "label";
+      group.add(label);
+
       scene.add(group);
       return group;
     }
@@ -185,6 +198,10 @@
     const splashes = [];
     const rains = [];
     const guards = [];
+    let cpuTimeout = null;
+    let nextRoundTimeout = null;
+    let celebrateTimer = 0;
+    let followTarget = null;
 
     function spawnBullet(fromLeft, willHit) {
       const geom = new THREE.SphereGeometry(0.2, 24, 24);
@@ -278,9 +295,45 @@
       player.userData.knock = {
         hold: 0.3,
         launchX: dir * 100,
-        launchY: 50,
+        launchY: 0,
       };
-      camDistTarget = 40;
+      camDistTarget = 18;
+      camFocusTargetX = player.position.x;
+      followTarget = player;
+      player.userData.flightLife = 2.2;
+    }
+
+    function spawnWinBurst(player) {
+      const base = player.position.clone();
+      base.y = 1.4;
+      for (let i = 0; i < 50; i++) {
+        const drop = new THREE.Mesh(
+          new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 12, 12),
+          new THREE.MeshPhongMaterial({ color: 0xfff2a8, emissive: 0xe1c453, transparent: true, opacity: 0.95 })
+        );
+        drop.position.copy(base);
+        drop.userData = {
+          vel: new THREE.Vector3(
+            (Math.random() - 0.5) * 6,
+            Math.random() * 6.5,
+            (Math.random() - 0.5) * 6
+          ),
+          life: 1.6,
+        };
+        scene.add(drop);
+        splashes.push(drop);
+      }
+    }
+
+    function triggerCelebrate() {
+      const champ = state.pendingCelebrate;
+      if (!champ) return;
+      champ.visible = true;
+      champ.userData.celebrate = 2.0;
+      spawnWinBurst(champ);
+      focusOn(champ.position.x, 1.2, 7.0);
+      cameraKick(0.9);
+      state.pendingCelebrate = null;
     }
 
     function resetPlayersPose() {
@@ -291,7 +344,12 @@
         p.userData.targetX = p.userData.baseX;
         delete p.userData.kb;
         delete p.userData.knock;
+        delete p.userData.celebrate;
+        delete p.userData.flightLife;
+        p.rotation.set(0, 0, 0);
+        p.visible = true;
       });
+      followTarget = null;
     }
 
     function updateChargeOrbs(player, count) {
@@ -316,6 +374,32 @@
       });
     }
 
+    function makeLabelTexture(text) {
+      const size = 128;
+      const fontSize = text.length > 2 ? 50 : 64;
+      const canvasTag = document.createElement("canvas");
+      canvasTag.width = canvasTag.height = size;
+      const ctx = canvasTag.getContext("2d");
+      ctx.clearRect(0, 0, size, size);
+      ctx.fillStyle = "rgba(0,0,0,0.78)";
+      ctx.font = `bold ${fontSize}px 'Noto Sans JP', sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, size / 2, size / 2);
+      const texture = new THREE.CanvasTexture(canvasTag);
+      texture.needsUpdate = true;
+      return texture;
+    }
+
+    function makeLabelSprite(text) {
+      const texture = makeLabelTexture(text);
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+      const sprite = new THREE.Sprite(material);
+      const scale = text.length > 2 ? 1.2 : 1.5;
+      sprite.scale.set(scale, scale, 1);
+      return sprite;
+    }
+
     // State
     const mapping = {
       left: { a: "charge", s: "gun", d: "guard" },
@@ -329,26 +413,49 @@
       sequenceRunning: false,
       timerId: null,
       winner: null,
+      mode: null, // "pvp" or "cpu"
+      pendingCelebrate: null,
     };
 
     const callEl = document.getElementById("call");
     const statusEl = document.getElementById("status");
     const scoreLeft = document.getElementById("score-left");
     const scoreRight = document.getElementById("score-right");
+    const startScreen = document.getElementById("start-screen");
+    const btn1p = document.getElementById("btn-1p");
+    const btn2p = document.getElementById("btn-2p");
 
     function refreshUI(hidden = true) {
       scoreLeft.textContent = `左 ${state.scores.left}`;
       scoreRight.textContent = `右 ${state.scores.right}`;
       updateChargeOrbs(leftPlayer, state.charges.left);
       updateChargeOrbs(rightPlayer, state.charges.right);
+      updateLabels();
       if (hidden) return;
+    }
+
+    function updateLabels() {
+      const leftLabel = leftPlayer.getObjectByName("label");
+      const rightLabel = rightPlayer.getObjectByName("label");
+      if (leftLabel) {
+        leftLabel.material.map = makeLabelTexture("1P");
+        leftLabel.material.needsUpdate = true;
+      }
+      const rightText = state.mode === "cpu" ? "CPU" : "2P";
+      if (rightLabel) {
+        rightLabel.material.map = makeLabelTexture(rightText);
+        rightLabel.material.needsUpdate = true;
+      }
     }
 
     function startSequence() {
       if (state.roundOpen || state.sequenceRunning || state.winner) return;
+      if (!state.mode) return;
       state.sequenceRunning = true;
       state.choices = { left: null, right: null };
       refreshUI(true);
+      camFocusTargetX = 0;
+      camDistTarget = 9.6;
       statusEl.textContent = "";
       const calls = ["3", "2", "1"];
       callEl.classList.add("flash");
@@ -374,12 +481,15 @@
       clearTimeout(state.timerId);
       state.timerId = setTimeout(resolveRound, 3000);
       hideShields();
+      if (state.mode === "cpu") scheduleCpuChoice();
     }
 
     function resolveRound() {
       if (!state.roundOpen) return;
       state.roundOpen = false;
       clearTimeout(state.timerId);
+      clearTimeout(cpuTimeout);
+      clearTimeout(nextRoundTimeout);
       if (!state.choices.left) state.choices.left = "none";
       if (!state.choices.right) state.choices.right = "none";
       const outcome = judge(state.choices.left, state.choices.right);
@@ -388,6 +498,14 @@
       callEl.textContent = outcome.call;
       statusEl.textContent = outcome.detail;
       checkWinner();
+      if (!state.winner) {
+        const hit = outcome.visuals.hitLeft || outcome.visuals.hitRight;
+        if (hit) {
+          scheduleResetAfterHit();
+        } else {
+          nextRoundTimeout = setTimeout(() => startSequence(), 900);
+        }
+      }
     }
 
     function judge(left, right) {
@@ -441,33 +559,28 @@
       if (state.scores.left >= 3 || state.scores.right >= 3) {
         state.winner = state.scores.left > state.scores.right ? "左" : "右";
         callEl.textContent = `${state.winner} 勝利`;
-      statusEl.textContent = "R";
+        statusEl.textContent = "R";
+        state.pendingCelebrate = state.winner === "左" ? leftPlayer : rightPlayer;
       }
     }
 
     function handleKey(e) {
       const key = e.key;
-      if (key === "Enter") {
-        camFocusTargetX = 0;
-        camDistTarget = 9.6;
-        resetPlayersPose();
-        startSequence();
-        return;
-      }
       if (key.toLowerCase() === "r") {
-        resetGame();
+        resetGame(true);
         return;
       }
       if (!state.roundOpen || state.winner) return;
       if (!state.choices.left && mapping.left[key.toLowerCase()]) {
         state.choices.left = mapping.left[key.toLowerCase()];
-      } else if (!state.choices.right && (mapping.right[key] || mapping.right[key.toLowerCase()])) {
+        if (state.mode === "cpu" && !state.choices.right) scheduleCpuChoice(true);
+      } else if (state.mode !== "cpu" && !state.choices.right && (mapping.right[key] || mapping.right[key.toLowerCase()])) {
         state.choices.right = mapping.right[key] || mapping.right[key.toLowerCase()];
       }
       if (state.choices.left && state.choices.right) resolveRound();
     }
 
-    function resetGame() {
+    function resetGame(showStart = false) {
       state.scores = { left: 0, right: 0 };
       state.charges = { left: 0, right: 0 };
       state.choices = { left: null, right: null };
@@ -475,10 +588,19 @@
       state.sequenceRunning = false;
       state.winner = null;
       clearTimeout(state.timerId);
-      callEl.textContent = "Enter";
+      clearTimeout(cpuTimeout);
+      clearTimeout(nextRoundTimeout);
+      callEl.textContent = "3";
       statusEl.textContent = "3 → 2 → 1 → 3秒入力";
+      resetPlayersPose();
       refreshUI(true);
       hideShields();
+      if (showStart) {
+        state.mode = null;
+        camFocusTargetX = 0;
+        camDistTarget = 9.6;
+        startScreen.style.display = "flex";
+      }
     }
 
     function handleVisuals(visuals) {
@@ -489,9 +611,36 @@
       if (visuals.right === "shield") { showShield(rightPlayer, false); focusOn(rightPlayer.position.x, 0.4, 9.0); }
       if (visuals.chargeLeft) spawnChargeRain(leftPlayer);
       if (visuals.chargeRight) spawnChargeRain(rightPlayer);
-      if (visuals.hitLeft) { addStain(leftPlayer); focusOn(leftPlayer.position.x, 0.8, 8.2); }
-      if (visuals.hitRight) { addStain(rightPlayer); focusOn(rightPlayer.position.x, 0.8, 8.2); }
+      if (visuals.hitLeft) { addStain(leftPlayer); focusOn(leftPlayer.position.x, 0.8, 12.0); }
+      if (visuals.hitRight) { addStain(rightPlayer); focusOn(rightPlayer.position.x, 0.8, 12.0); }
       movePlayers(visuals);
+    }
+
+    function scheduleResetAfterHit() {
+      clearTimeout(nextRoundTimeout);
+      camDistTarget = 12.5;
+      camFocusTargetX = 0;
+      nextRoundTimeout = setTimeout(() => {
+        resetPlayersPose();
+        camFocusTargetX = 0;
+        camDistTarget = 9.6;
+        startSequence();
+      }, 2000);
+    }
+
+    function scheduleCpuChoice(immediate = false) {
+      clearTimeout(cpuTimeout);
+      const delay = immediate ? 0 : 40 + Math.random() * 80;
+      cpuTimeout = setTimeout(() => {
+        if (!state.roundOpen || state.winner) return;
+        // simple AI: if charge available 70% shoot else charge, occasionally guard
+        const hasCharge = state.charges.right > 0;
+        let choice = "charge";
+        if (Math.random() < 0.2) choice = "guard";
+        if (hasCharge && Math.random() < 0.7) choice = "gun";
+        state.choices.right = choice;
+        if (state.choices.left && state.choices.right) resolveRound();
+      }, delay);
     }
 
     function showShield(player, isLeft) {
@@ -553,7 +702,20 @@
     }
 
     document.addEventListener("keydown", handleKey);
+    btn1p.addEventListener("click", () => startMode("cpu"));
+    btn2p.addEventListener("click", () => startMode("pvp"));
     refreshUI(true);
+
+    function startMode(mode) {
+      state.mode = mode;
+      resetGame(false);
+      startScreen.style.display = "none";
+      camFocusTargetX = 0;
+      camDistTarget = 9.6;
+      callEl.textContent = "3";
+      statusEl.textContent = "";
+      setTimeout(() => startSequence(), 200);
+    }
 
     // Animation loop
     const clock = new THREE.Clock();
@@ -565,30 +727,39 @@
       camPhase = Math.max(0, camPhase - delta);
       camShake = Math.max(0, camShake - delta * 2);
       camOrbit += delta * 0.35;
-      camFocusX = THREE.MathUtils.lerp(camFocusX, camFocusTargetX, delta * 2.5);
-      camDist = THREE.MathUtils.lerp(camDist, camDistTarget, delta * 2.5);
+      const followLerp = followTarget && followTarget.visible ? 8 : 2.5;
+      const distLerp = followTarget && followTarget.visible ? 6 : 2.5;
+      camFocusX = THREE.MathUtils.lerp(camFocusX, camFocusTargetX, delta * followLerp);
+      camDist = THREE.MathUtils.lerp(camDist, camDistTarget, delta * distLerp);
       const sway = Math.sin(performance.now() * 0.0006) * 0.6;
       const shakeX = (Math.random() - 0.5) * camShake;
       const shakeY = (Math.random() - 0.5) * camShake;
-      const focusX = camFocusX || (leftPlayer.position.x + rightPlayer.position.x) * 0.5;
+      const focusX = camFocusX;
       const target = new THREE.Vector3(focusX, 1.4, 0);
       camera.position.x = focusX + sway + Math.sin(camOrbit) * 0.7 + shakeX;
       camera.position.y = 2.4 + Math.sin(camOrbit * 0.8) * 0.15 + camPhase * 0.4 + shakeY;
       camera.position.z = camDist - camPhase * 0.6 + Math.cos(camOrbit) * 0.6;
       camera.lookAt(target);
 
-      // player move lerp
+      // player move lerp / knockback / celebrate
+      let flightActive = false;
       [leftPlayer, rightPlayer].forEach((p) => {
         const baseY = -1.2;
-        if (p.userData.knock && p.userData.knock.hold > 0) {
+        if (p.userData.celebrate && p.userData.celebrate > 0) {
+          p.userData.celebrate -= raw;
+          const t = performance.now() * 0.002;
+          p.position.x = THREE.MathUtils.lerp(p.position.x, p.userData.baseX, delta * 2.5);
+          p.position.y = baseY + 0.6 + Math.sin(t * 6) * 0.3;
+          p.rotation.y = Math.sin(t * 6) * 0.5;
+        } else if (p.userData.knock && p.userData.knock.hold > 0) {
           p.userData.knock.hold -= raw;
           const shake = 0.9;
           const t = performance.now() * 0.001;
-          const freq = 40; // 60Hz振動
+          const freq = 60; // 60Hz振動
           const wave = Math.sin(2 * Math.PI * freq * t);
           const wave2 = Math.sin(2 * Math.PI * freq * t + Math.PI / 3);
-          p.position.x = p.userData.targetX + wave * shake * 0.9;
-          p.position.y = baseY + 1.2 + wave2 * shake;
+          p.position.x = p.userData.targetX + wave * shake * 1.0;
+          p.position.y = baseY + 1.4 + wave2 * shake;
           if (p.userData.knock.hold <= 0) {
             p.userData.kb = p.userData.kb || { x: 0, y: 0 };
             p.userData.kb.x += p.userData.knock.launchX;
@@ -604,11 +775,31 @@
             p.position.y = baseY;
             p.userData.kb.y = 0;
           }
+          if (p.userData.flightLife !== undefined) {
+            p.userData.flightLife -= delta;
+            flightActive = true;
+            if (p.userData.flightLife <= 0 && p.visible) {
+              spawnSplash(p);
+              p.visible = false;
+              p.userData.kb = null;
+              p.userData.knock = null;
+              p.userData.flightLife = null;
+              followTarget = null;
+              if (state.pendingCelebrate) triggerCelebrate();
+            }
+          }
         } else {
+          p.rotation.y = THREE.MathUtils.lerp(p.rotation.y, 0, delta * 3);
           p.position.x = THREE.MathUtils.lerp(p.position.x, p.userData.targetX, delta * 3);
           p.position.y = THREE.MathUtils.lerp(p.position.y, baseY, delta * 3);
         }
       });
+      if (followTarget && followTarget.visible) {
+        camFocusTargetX = followTarget.position.x;
+        camDistTarget = 14;
+      } else if (state.pendingCelebrate && !flightActive) {
+        triggerCelebrate();
+      }
       updateChargeOrbs(leftPlayer, state.charges.left);
       updateChargeOrbs(rightPlayer, state.charges.right);
 
