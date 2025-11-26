@@ -1110,10 +1110,6 @@
     btnImportWeights.textContent = "ウェイト読込";
     btnImportWeights.id = "btn-import-weights";
     btnImportWeights.style.cssText = "padding:4px 10px;font-weight:800;border:none;border-radius:8px;background:#ffe2ff;color:#0b1720;cursor:pointer;display:none;";
-    const btnImportWeights = document.createElement("button");
-    btnImportWeights.textContent = "ウェイト読込";
-    btnImportWeights.id = "btn-import-weights";
-    btnImportWeights.style.cssText = "padding:4px 10px;font-weight:800;border:none;border-radius:8px;background:#ffe2ff;color:#0b1720;cursor:pointer;display:none;";
     const hudInputBadge = document.getElementById("hud-input");
     const camEl = document.getElementById("cam");
     const lineLeft = document.getElementById("line-left");
@@ -1726,18 +1722,16 @@
           else if (roll <= acc + weights.gun / sum) pick("gun");
           else pick("guard");
         } else if (state.cpuMode === "ultra") {
-          // simple reactive strategy: counter player intent
-          const playerChoice = state.choices.left;
-          if (playerChoice === "gun" && !state.shieldLocked.right) {
-            choice = "guard";
-          } else if (hasCharge) {
-            // if we have ammo, prefer shooting unless player is charging with none
-            choice = "gun";
-          } else if (playerChoice === "guard" && oppHasCharge) {
-            choice = "charge";
-          } else {
-            choice = hasCharge ? "gun" : "charge";
-          }
+          // weighted strategy based on imported weights
+          const w = config.cpuWeights || { charge: 0.33, gun: 0.33, guard: 0.34 };
+          const sum = w.charge + w.gun + w.guard || 1;
+          const roll = Math.random();
+          let acc = 0;
+          acc += w.charge / sum;
+          if (roll <= acc) choice = "charge";
+          else if (roll <= acc + w.gun / sum) choice = "gun";
+          else choice = "guard";
+          if (choice === "guard" && state.shieldLocked.right) choice = hasCharge ? "gun" : "charge";
         } else {
           if (Math.random() < 0.2) choice = "guard";
           if (hasCharge && Math.random() < 0.7) choice = "gun";
