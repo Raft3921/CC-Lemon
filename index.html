@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CC LEMON 3D</title>
+  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="14" fill="%23f5c000"/%3E%3Ccircle cx="32" cy="32" r="21" fill="%23fff26a" stroke="%230b1720" stroke-width="4"/%3E%3Ccircle cx="32" cy="32" r="13" fill="%23ffe052" opacity=".85"/%3E%3Cpath d="M32 13v38M13 32h38M18.6 18.6l26.8 26.8M45.4 18.6 18.6 45.4" stroke="%23fff9c7" stroke-width="4" stroke-linecap="round"/%3E%3Ccircle cx="32" cy="32" r="4" fill="%23ffffff"/%3E%3C/svg%3E' />
   <style>
     :root {
       --yellow: #f5c000;
@@ -27,6 +28,30 @@
       width: 100vw;
       height: 100vh;
       display: block;
+    }
+    #start-screen {
+      background:
+        radial-gradient(circle at 24% 24%, rgba(255,255,255,0.2), transparent 26%),
+        radial-gradient(circle at 78% 30%, rgba(10,226,255,0.18), transparent 28%),
+        rgba(0,0,0,0.48) !important;
+      backdrop-filter: blur(2px);
+    }
+    #start-screen > div {
+      background: linear-gradient(145deg, rgba(255,251,210,0.96), rgba(255,234,85,0.94)) !important;
+      border: 3px solid rgba(255,255,255,0.85);
+      box-shadow:
+        0 20px 52px rgba(0,0,0,0.38),
+        0 0 0 6px rgba(255,210,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.8) !important;
+    }
+    #start-screen button {
+      box-shadow: 0 8px 0 rgba(0,0,0,0.18), 0 14px 24px rgba(0,0,0,0.18);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+    #start-screen button:hover {
+      transform: translateY(-2px);
+      filter: saturate(1.1) brightness(1.05);
+      box-shadow: 0 10px 0 rgba(0,0,0,0.16), 0 18px 28px rgba(0,0,0,0.22);
     }
     #hud {
       position: fixed;
@@ -65,89 +90,110 @@
       letter-spacing: 0.06em;
       box-shadow: 0 6px 20px rgba(0,0,0,0.18);
     }
-    #keys {
+    #controls-guide {
+      position: fixed;
+      inset: 14px 16px auto;
+      z-index: 7;
+      pointer-events: none;
       display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .control-card {
+      width: min(280px, 42vw);
+      background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(255,243,126,0.78));
+      border: 2px solid rgba(255,255,255,0.8);
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(11,23,32,0.08);
+      backdrop-filter: blur(5px);
+    }
+    .control-card.right {
+      text-align: right;
+    }
+    .control-title {
+      display: flex;
+      align-items: baseline;
       gap: 8px;
-      background: rgba(255,255,255,0.6);
-      padding: 4px 10px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-      color: #123;
-      pointer-events: auto; /* allow clicking buttons inside HUD */
+      font-size: 1.05rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+      color: #0b1720;
+    }
+    .control-card.right .control-title {
+      justify-content: flex-end;
+    }
+    .control-sub {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: rgba(11,23,32,0.62);
+    }
+    .control-list {
+      display: grid;
+      gap: 6px;
+      font-size: clamp(0.78rem, 1.4vw, 0.95rem);
+      font-weight: 800;
+    }
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 28px;
+    }
+    .control-card.right .control-row {
+      justify-content: flex-end;
+    }
+    .control-key {
+      min-width: 32px;
+      height: 28px;
+      display: inline-grid;
+      place-items: center;
+      border: 2px solid #0b1720;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #ffffff, #d8f7ff);
+      font-weight: 900;
+      color: #0b1720;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.12), 0 2px 0 rgba(0,0,0,0.12);
+    }
+    .control-action {
+      color: rgba(11,23,32,0.9);
+    }
+    .control-card.is-cpu .control-row {
+      opacity: 0.45;
+    }
+    .control-card.is-cpu .control-sub::after {
+      content: " / CPU自動操作";
+    }
+    @media (max-width: 720px) {
+      #controls-guide {
+        inset: 8px 8px auto;
+        gap: 8px;
+      }
+      .control-card {
+        width: calc(50vw - 12px);
+        padding: 8px;
+      }
+      .control-title {
+        font-size: 0.92rem;
+        margin-bottom: 6px;
+      }
+      .control-list {
+        gap: 4px;
+      }
+      .control-row {
+        gap: 5px;
+      }
+      .control-key {
+        min-width: 26px;
+        height: 24px;
+        font-size: 0.78rem;
+      }
     }
     .flash { animation: pulse 0.8s ease-in-out infinite; }
     @keyframes pulse {
       0% { transform: scale(1); opacity: 0.5; }
       50% { transform: scale(1.06); opacity: 1; }
       100% { transform: scale(1); opacity: 0.5; }
-    }
-    #settings-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 36px;
-      height: 36px;
-      border: none;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.1);
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      font-size: 18px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-    }
-    #settings-panel {
-      position: absolute;
-      top: 52px;
-      right: 10px;
-      background: #fff8d0;
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.25);
-      display: none;
-      min-width: 180px;
-      font-weight: 700;
-      color: #0b1720;
-      gap: 8px;
-    }
-    #settings-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 8;
-      display: none;
-      place-items: center;
-      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.45), rgba(255,255,255,0.2)), rgba(0,0,0,0.4);
-      backdrop-filter: blur(6px);
-      padding: 16px;
-    }
-    .settings-card {
-      width: min(520px, 90vw);
-      background: #fff9d8;
-      border-radius: 18px;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
-      padding: 18px 18px 16px;
-      color: #0b1720;
-      display: grid;
-      gap: 14px;
-      border: 2px solid rgba(0,0,0,0.08);
-    }
-    .settings-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .settings-head h2 {
-      margin: 0;
-      font-size: 1.35rem;
-      letter-spacing: 0.04em;
-    }
-    .pill-group {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
     }
     .pill {
       border: 2px solid #0b1720;
@@ -166,73 +212,35 @@
       box-shadow: 0 10px 24px rgba(0,0,0,0.26);
       transform: translateY(-1px);
     }
-    .settings-row {
-      background: rgba(255,255,255,0.7);
-      border-radius: 14px;
-      padding: 12px;
-      border: 1px solid rgba(0,0,0,0.05);
-      display: grid;
-      gap: 8px;
+    #cpu-difficulty .pill {
+      position: relative;
+      min-width: 78px;
+      padding-left: 12px !important;
+      padding-right: 12px !important;
     }
-    .settings-row h3 {
-      margin: 0;
-      font-size: 1rem;
-      letter-spacing: 0.02em;
+    #cpu-difficulty .pill.active {
+      background: #0b1720 !important;
+      color: #fff9d8 !important;
+      border-color: #fff25a !important;
+      box-shadow:
+        0 0 0 3px #fff25a,
+        0 8px 0 rgba(0,0,0,0.2),
+        0 14px 24px rgba(0,0,0,0.24) !important;
+      transform: translateY(-2px) scale(1.04);
     }
-    .settings-note {
-      margin: 0;
-      color: rgba(11, 23, 32, 0.7);
-      font-size: 0.92rem;
-      line-height: 1.5;
-    }
-    .toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 800;
-      font-size: 0.98rem;
-    }
-    .toggle input {
+    #cpu-difficulty .pill.active::before {
+      content: "✓";
+      display: inline-grid;
+      place-items: center;
       width: 18px;
       height: 18px;
-      cursor: pointer;
-      accent-color: #1f2fe6;
-    }
-    .settings-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    .settings-close {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-weight: 800;
-      cursor: pointer;
-      background: #1f2fe6;
-      color: #fff;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.25);
-    }
-    #settings-button {
-      z-index: 7;
-      background: rgba(0,0,0,0.72);
-      color: #fff;
-    }
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      background: rgba(0,0,0,0.08);
-      border-radius: 999px;
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-    #hand-indicators {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 6;
+      margin-right: 5px;
+      border-radius: 50%;
+      background: #fff25a;
+      color: #0b1720;
+      font-size: 0.78rem;
+      font-weight: 900;
+      vertical-align: 1px;
     }
     #shield-meters {
       position: fixed;
@@ -383,16 +391,6 @@
       0% { transform: scale(1.2); color: #fff; text-shadow: 0 0 14px rgba(255,255,255,0.9); }
       100% { transform: scale(1); color: inherit; text-shadow: none; }
     }
-    .hand-line {
-      position: absolute;
-      width: 120px;
-      height: 4px;
-      background: rgba(0, 255, 0, 0.75);
-      border-radius: 6px;
-      box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
-      transform: translate(-50%, -50%);
-      display: none;
-    }
     #fx-layer {
       position: fixed;
       inset: 0;
@@ -478,6 +476,31 @@
       box-shadow: 0 0 16px rgba(255, 156, 31, 0.7);
       animation: fx-impact 0.3s ease-out forwards;
     }
+    .fx-result {
+      position: absolute;
+      transform: translate(-50%, -50%) scale(0.7);
+      font-weight: 900;
+      font-size: clamp(48px, 8vw, 104px);
+      letter-spacing: 0.04em;
+      -webkit-text-stroke: 4px #0b1720;
+      text-shadow:
+        0 10px 0 rgba(0,0,0,0.22),
+        0 0 24px rgba(255,255,255,0.75);
+      animation: fx-result-pop 0.9s cubic-bezier(0.16, 0.88, 0.25, 1) forwards;
+      white-space: nowrap;
+    }
+    .fx-result.win {
+      color: #fff25a;
+    }
+    .fx-result.out {
+      color: #ff5548;
+    }
+    .fx-vignette {
+      position: absolute;
+      inset: -8%;
+      background: radial-gradient(circle, rgba(255,255,255,0) 35%, rgba(255,61,61,0.22) 66%, rgba(0,0,0,0.42) 100%);
+      animation: fx-vignette 0.7s ease-out forwards;
+    }
     @keyframes fx-pop {
       0% { transform: translate(-50%, -50%) scale(0.4) rotate(0deg); opacity: 1; }
       70% { transform: translate(-50%, -50%) scale(1.1) rotate(20deg); }
@@ -497,17 +520,21 @@
       70% { transform: translate(-50%, -50%) scale(1.02); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1.16); opacity: 0; }
     }
+    @keyframes fx-result-pop {
+      0% { transform: translate(-50%, -50%) scale(0.45) rotate(-7deg); opacity: 0; }
+      20% { transform: translate(-50%, -50%) scale(1.15) rotate(3deg); opacity: 1; }
+      70% { transform: translate(-50%, -58%) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translate(-50%, -72%) scale(0.92) rotate(0deg); opacity: 0; }
+    }
+    @keyframes fx-vignette {
+      0% { opacity: 0; }
+      18% { opacity: 1; }
+      100% { opacity: 0; }
+    }
   </style>
 </head>
 <body>
   <canvas id="scene"></canvas>
-  <video id="cam" playsinline style="display:none;"></video>
-  <canvas id="debug-canvas" width="640" height="480" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:6;pointer-events:none;"></canvas>
-  <div id="debug" style="position:fixed;top:10px;left:10px;background:rgba(0,0,0,0.65);color:#fff;padding:8px 10px;border-radius:8px;font-size:12px;font-family:monospace;display:none;z-index:6;pointer-events:none;line-height:1.4;"></div>
-  <div id="hand-indicators">
-    <div class="hand-line" id="line-left"></div>
-    <div class="hand-line" id="line-right"></div>
-  </div>
   <div id="shield-meters">
     <div class="shield-meter" id="shield-meter-left">
       <div class="label"></div>
@@ -535,14 +562,26 @@
     <div class="boost-pill" id="boost-pill-right"><div class="boost-fill" id="boost-fill-right"></div></div>
   </div>
   <div id="fx-layer"></div>
-  <div id="input-toggle" style="position:fixed;top:12px;right:12px;z-index:7;background:rgba(0,0,0,0.65);color:#fff;padding:8px 12px;border-radius:12px;font-weight:800;font-size:0.95rem;display:flex;align-items:center;gap:10px;box-shadow:0 8px 20px rgba(0,0,0,0.3);">
-    <span>入力</span>
-    <button id="btn-input" style="padding:6px 10px;border:none;border-radius:10px;font-weight:800;cursor:pointer;background:#fff;color:#0b1720;">キー</button>
+  <div id="controls-guide" aria-label="操作ガイド">
+    <div class="control-card left">
+      <div class="control-title">1P <span class="control-sub">キーボード</span></div>
+      <div class="control-list">
+        <div class="control-row"><span class="control-key">A</span><span class="control-action">ためる</span></div>
+        <div class="control-row"><span class="control-key">S</span><span class="control-action">撃つ</span></div>
+        <div class="control-row"><span class="control-key">D</span><span class="control-action">守る</span></div>
+      </div>
+    </div>
+    <div class="control-card right" id="right-control-card">
+      <div class="control-title"><span class="control-sub" id="right-control-sub">キーボード</span> <span id="right-control-title">2P</span></div>
+      <div class="control-list">
+        <div class="control-row"><span class="control-action">ためる</span><span class="control-key">;</span></div>
+        <div class="control-row"><span class="control-action">撃つ</span><span class="control-key">:</span></div>
+        <div class="control-row"><span class="control-action">守る</span><span class="control-key">]</span></div>
+      </div>
+    </div>
   </div>
   <div id="lock-x-layer" style="position:fixed;inset:0;pointer-events:none;z-index:8;"></div>
-  <button id="settings-button" aria-label="設定" title="設定" style="position:fixed;bottom:14px;right:14px;z-index:7;">⚙</button>
   <div id="start-screen" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:5;">
-    <button id="btn-settings" aria-label="設定" style="position:absolute;top:14px;right:14px;border:none;background:#fff8d0;color:#0b1720;font-size:18px;width:40px;height:40px;border-radius:12px;box-shadow:0 8px 18px rgba(0,0,0,0.3);cursor:pointer;display:grid;place-items:center;font-weight:900;">⚙</button>
     <div style="background:#fff8d0;border-radius:16px;padding:18px 22px;box-shadow:0 12px 30px rgba(0,0,0,0.4);display:grid;gap:10px;min-width:260px;text-align:center;font-weight:800;color:#0b1720;position:relative;">
       <div style="font-size:1.2rem;">モード選択</div>
       <button id="btn-1p" style="padding:10px 12px;font-size:1.05rem;border:none;border-radius:10px;background:#1f2fe6;color:#fff;cursor:pointer;">1人プレイ</button>
@@ -551,7 +590,11 @@
         <span style="font-weight:700;">CPU:</span>
         <button class="pill" data-cpu="normal" style="padding:6px 10px;border:none;border-radius:10px;background:#fff;color:#0b1720;cursor:pointer;font-weight:800;border:2px solid #0b1720;">ふつう</button>
         <button class="pill" data-cpu="smart" style="padding:6px 10px;border:none;border-radius:10px;background:#fff;color:#0b1720;cursor:pointer;font-weight:800;border:2px solid #0b1720;">あたまいい</button>
-        <button class="pill" data-cpu="ultra" style="padding:6px 10px;border:none;border-radius:10px;background:#fff;color:#0b1720;cursor:pointer;font-weight:800;border:2px solid #0b1720;">超あたまいい</button>
+        <button class="pill" data-cpu="hard" style="padding:6px 10px;border:none;border-radius:10px;background:#fff;color:#0b1720;cursor:pointer;font-weight:800;border:2px solid #0b1720;">ハード</button>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;font-size:0.9rem;">
+        <span style="font-weight:700;">草:</span>
+        <button id="btn-grass-toggle" class="pill" type="button" style="padding:6px 14px;border:2px solid #0b1720;border-radius:10px;background:#fff;color:#0b1720;cursor:pointer;font-weight:800;min-width:88px;">OFF</button>
       </div>
       <div style="display:grid;gap:6px;font-size:0.9rem;">
         <div style="font-weight:700;">頭装備</div>
@@ -574,31 +617,6 @@
           </div>
         </div>
       </div>
-      <div style="font-size:0.9rem;font-weight:600;color:#333;">1P: A/S/D ｜ 2P: ;/:/]</div>
-      <div id="control-mode" style="font-size:0.9rem;font-weight:700;color:#0b1720;background:#fff2a0;border-radius:10px;padding:8px;">操作: <span id="control-mode-label"></span></div>
-    </div>
-  </div>
-  <div id="settings-overlay" aria-hidden="true">
-    <div class="settings-card">
-      <div class="settings-head">
-        <h2>設定</h2>
-        <span class="chip">カメラは手入力で使用</span>
-      </div>
-      <div class="settings-row">
-        <h3>1Pの入力方法</h3>
-        <div class="pill-group">
-          <button class="pill" data-input-mode="keyboard">キーボード</button>
-          <button class="pill" data-input-mode="hand">ハンドトラッキング</button>
-        </div>
-        <p class="settings-note">ハンドトラッキングにすると左手で操作できます。カメラの許可を求められます。</p>
-      </div>
-      <div class="settings-row">
-        <h3>表示</h3>
-        <label class="toggle"><input type="checkbox" id="chk-hand-lines" checked /> 手位置ラインを表示</label>
-        <label class="toggle"><input type="checkbox" id="chk-debug" /> デバッグ情報を表示（F3と同じ）</label>
-      </div>
-      <div class="settings-actions">
-        <button id="btn-settings-close" class="settings-close">閉じる</button>
       </div>
     </div>
   </div>
@@ -608,19 +626,18 @@
     <div style="display: grid; gap: 6px; justify-items: center;">
       <div id="status"></div>
       <div id="bar"><span id="score-left">左 0</span><span>｜</span><span id="score-right">右 0</span></div>
-      <div id="keys" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;">
-        <span id="keys-text">A/S/D ｜ ;/:/]</span>
-        <button id="hud-input" style="padding:4px 10px;font-weight:800;border:none;border-radius:8px;background:#0b1720;color:#fff;cursor:pointer;">入力:キー</button>
-        <span style="font-size:0.8rem;opacity:0.8;">Rでリセット</span>
-        <button id="btn-report" style="padding:4px 10px;font-weight:800;border:none;border-radius:8px;background:#ffdf4c;color:#0b1720;cursor:pointer;display:none;">レポートDL</button>
-      </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-  <script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from "three";
     // Perf/visual switches
     const PERF = { fx: "minimal" }; // "minimal" | "high"
     // Outline scales (global + per-type)
@@ -629,6 +646,8 @@
     const OUTLINE_SCALE_HEAD = 1.05;
     // Tuning: how fast headgear flies when knocked off
     const HEADGEAR_KNOCK_SPEED = 1.2;
+    const ARENA_CAMERA_LIMIT_X = 4.8;
+    const KNOCKOUT_EXIT_X = 12.5;
     // --- Simple sound kit (inline data URIs to avoid asset hosting) ---
     const sounds = {
       count: new Audio("data:audio/wav;base64,UklGRgYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAACAgICAgICAgICAgICAgICA"),
@@ -639,42 +658,688 @@
       win: new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAP//AACAgP//AACAgP//AACAgP//AACAgP//AACAgP//AACAgP//AACAgA=="),
     };
     Object.values(sounds).forEach((s) => { s.volume = 0.7; });
+    let audioCtx = null;
+    function getAudioCtx() {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      if (!audioCtx) audioCtx = new Ctx();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      return audioCtx;
+    }
+    function playClap() {
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const noiseSize = Math.floor(ctx.sampleRate * 0.08);
+      const buffer = ctx.createBuffer(1, noiseSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < noiseSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / noiseSize);
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1700, now);
+      filter.Q.setValueAtTime(0.9, now);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.exponentialRampToValueAtTime(0.65, now + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      src.connect(filter).connect(gain).connect(ctx.destination);
+      src.start(now);
+      src.stop(now + 0.1);
+    }
+    function playDon() {
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(130, now);
+      osc.frequency.exponentialRampToValueAtTime(48, now + 0.18);
+      gain.gain.setValueAtTime(0.7, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.24);
+    }
+    function playCheer() {
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(360 + Math.random() * 420, now);
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        }, i * 55);
+      }
+    }
 
     // Basic THREE setup
     const canvas = document.getElementById("scene");
     const fxLayer = document.getElementById("fx-layer");
     const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false }); // disable MSAA for higher FPS
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 0.85)); // drop resolution a bit more for speed
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1 : 1.25));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
+    renderer.autoClear = false;
+    const outlineViewport = { value: new THREE.Vector2(window.innerWidth, window.innerHeight) };
 
+    const backgroundScene = new THREE.Scene();
+    backgroundScene.background = new THREE.Color("#f7c400");
+    backgroundScene.fog = new THREE.Fog(0xf7c400, 13, 34);
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#f5c000");
+    scene.background = null;
+    scene.fog = new THREE.Fog(0xf7c400, 13, 34);
     const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(0, 2.5, 10);
 
     const light = new THREE.DirectionalLight(0xffffff, 1.2);
     light.position.set(4, 8, 6);
     scene.add(light);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.01));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+    const bgLight = light.clone();
+    backgroundScene.add(bgLight);
+    backgroundScene.add(new THREE.AmbientLight(0xffffff, 0.18));
     // Add stronger back/rim and sky/ground fill for contrasty shading
     const rimLight = new THREE.DirectionalLight(0xfff6d2, 1.2);
     rimLight.position.set(-6, 6, -8);
     scene.add(rimLight);
+    backgroundScene.add(rimLight.clone());
     const hemi = new THREE.HemisphereLight(0xe8f4ff, 0xf5c000, 0.4);
     scene.add(hemi);
+    backgroundScene.add(hemi.clone());
+
+    const worldUniforms = {
+      time: { value: 0 },
+      pulse: { value: 0 },
+      grassWind: { value: 0 },
+    };
+
+    function getGpuRendererName() {
+      try {
+        const gl = renderer.getContext();
+        const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+        if (!debugInfo) return "";
+        return String(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || "");
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function getPerformanceScore() {
+      if (isMobile) return false;
+      const cores = navigator.hardwareConcurrency || 0;
+      const memory = navigator.deviceMemory || 0;
+      const maxTextureSize = renderer.capabilities.maxTextureSize || 0;
+      const gpu = getGpuRendererName().toLowerCase();
+      const strongGpu = /(rtx|geforce|radeon pro|radeon rx|apple m[1-9]|m[1-9] pro|m[1-9] max|m[1-9] ultra)/.test(gpu);
+      const weakGpu = /(intel|uhd|iris|swiftshader|llvmpipe)/.test(gpu);
+      let score = 0;
+      if (cores >= 8) score += 2;
+      else if (cores >= 6) score += 1;
+      if (memory >= 8) score += 2;
+      else if (memory >= 4) score += 1;
+      if (maxTextureSize >= 16384) score += 2;
+      else if (maxTextureSize >= 8192) score += 1;
+      if (strongGpu) score += 2;
+      if (weakGpu) score -= 2;
+      return score;
+    }
+
+    function shouldAutoEnableGrass() {
+      if (isMobile) return false;
+      const score = getPerformanceScore();
+      return score >= 5;
+    }
+
+    function shouldAnimateGrass() {
+      if (isMobile) return false;
+      const score = getPerformanceScore();
+      return score >= 7;
+    }
+
+    function makeBackdropMaterial() {
+      return new THREE.ShaderMaterial({
+        uniforms: worldUniforms,
+        depthWrite: false,
+        depthTest: false,
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform float time;
+          uniform float pulse;
+          varying vec2 vUv;
+          void main() {
+            float vertical = smoothstep(0.0, 1.0, vUv.y);
+            float soft = sin(vUv.x * 3.14159 + time * 0.06) * 0.5 + 0.5;
+            vec3 base = mix(vec3(0.82, 0.60, 0.08), vec3(0.96, 0.80, 0.22), vertical);
+            base += vec3(1.0, 0.95, 0.55) * soft * 0.025;
+            base += vec3(1.0, 0.45, 0.12) * pulse * 0.04;
+            gl_FragColor = vec4(base, 1.0);
+          }
+        `,
+      });
+    }
+
+    const backdrop = new THREE.Mesh(
+      new THREE.PlaneGeometry(72, 18, 1, 1),
+      makeBackdropMaterial()
+    );
+    backdrop.position.set(0, 3.8, -9);
+    backdrop.renderOrder = -50;
+    backgroundScene.add(backdrop);
 
     // Ground plane for reference
     const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(30, 12),
-      new THREE.MeshPhongMaterial({ color: 0xf5c000, side: THREE.DoubleSide, depthWrite: false })
+      new THREE.PlaneGeometry(72, 16, 1, 1),
+      new THREE.MeshPhongMaterial({ color: 0xe8b428, side: THREE.DoubleSide, depthWrite: false })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -2;
     ground.renderOrder = -10; // always draw behind players/outline
-    scene.add(ground);
+    backgroundScene.add(ground);
+
+    const environmentItems = [];
+    const fizzBubbles = [];
+    let grassField = null;
+
+    function envMat(color, emissive = 0x000000, intensity = 0.1, opacity = 1) {
+      return new THREE.MeshStandardMaterial({
+        color,
+        emissive,
+        emissiveIntensity: intensity,
+        roughness: 0.42,
+        metalness: 0.02,
+        transparent: opacity < 1,
+        opacity,
+      });
+    }
+
+    function makeLemonSlice(radius = 0.75) {
+      const group = new THREE.Group();
+      const peel = new THREE.Mesh(
+        new THREE.TorusGeometry(radius, 0.09, 16, 48),
+        envMat(0xffdf22, 0xffaa00, 0.35)
+      );
+      group.add(peel);
+      const pulp = new THREE.Mesh(
+        new THREE.CircleGeometry(radius * 0.84, 48),
+        new THREE.MeshBasicMaterial({ color: 0xfff67a, transparent: true, opacity: 0.72, side: THREE.DoubleSide })
+      );
+      pulp.position.z = -0.015;
+      group.add(pulp);
+      for (let i = 0; i < 8; i++) {
+        const spoke = new THREE.Mesh(
+          new THREE.BoxGeometry(radius * 0.75, 0.025, 0.025),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })
+        );
+        spoke.position.x = Math.cos((i / 8) * Math.PI * 2) * radius * 0.2;
+        spoke.position.y = Math.sin((i / 8) * Math.PI * 2) * radius * 0.2;
+        spoke.rotation.z = (i / 8) * Math.PI * 2;
+        group.add(spoke);
+      }
+      return group;
+    }
+
+    function makeBigLemon() {
+      const group = new THREE.Group();
+      const lemonMat = new THREE.MeshStandardMaterial({
+        color: 0xffdf36,
+        emissive: 0xb88400,
+        emissiveIntensity: 0.08,
+        roughness: 0.58,
+        metalness: 0.02,
+      });
+      const body = new THREE.Mesh(new THREE.SphereGeometry(0.72, 32, 24), lemonMat);
+      body.scale.set(1.45, 0.86, 0.92);
+      group.add(body);
+      const nubMat = envMat(0xf6c51e, 0x8c5e00, 0.04);
+      [-1, 1].forEach((side) => {
+        const nub = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.34, 18), nubMat);
+        nub.position.x = side * 1.05;
+        nub.rotation.z = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+        group.add(nub);
+      });
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 10), envMat(0x74b84a, 0x244d11, 0.05));
+      leaf.scale.set(1.5, 0.34, 0.72);
+      leaf.position.set(-0.72, 0.58, 0.12);
+      leaf.rotation.set(0.4, 0.2, -0.55);
+      group.add(leaf);
+      return group;
+    }
+
+    function makeSodaCan(color) {
+      const group = new THREE.Group();
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.28, 0.3, 0.9, 24),
+        envMat(color, color, 0.12)
+      );
+      const top = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.29, 0.29, 0.04, 24),
+        envMat(0xf6f6d6, 0xffffff, 0.08)
+      );
+      top.position.y = 0.47;
+      const label = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.305, 0.305, 0.32, 24, 1, true),
+        new THREE.MeshBasicMaterial({ color: 0xfff35a, transparent: true, opacity: 0.88, side: THREE.DoubleSide })
+      );
+      group.add(body, top, label);
+      return group;
+    }
+
+    let crateFaceTexture = null;
+    function makeCrateFaceTexture() {
+      if (crateFaceTexture) return crateFaceTexture;
+      const size = 256;
+      const c = document.createElement("canvas");
+      c.width = c.height = size;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#f2df9c";
+      ctx.fillRect(0, 0, size, size);
+      for (let y = 26; y < size; y += 38) {
+        ctx.fillStyle = y % 76 === 26 ? "rgba(126,92,18,0.34)" : "rgba(255,255,255,0.28)";
+        ctx.fillRect(0, y, size, 5);
+        ctx.fillStyle = "rgba(126,92,18,0.12)";
+        ctx.fillRect(0, y + 10, size, 2);
+      }
+      for (let i = 0; i < 18; i++) {
+        const y = 10 + i * 14;
+        ctx.strokeStyle = "rgba(255,255,255,0.18)";
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.bezierCurveTo(60, y - 5, 150, y + 5, size, y);
+        ctx.stroke();
+      }
+      crateFaceTexture = new THREE.CanvasTexture(c);
+      crateFaceTexture.colorSpace = THREE.SRGBColorSpace;
+      return crateFaceTexture;
+    }
+
+    function makeWoodCrate() {
+      const group = new THREE.Group();
+      const baseWood = new THREE.MeshStandardMaterial({
+        color: 0xf5e7ad,
+        map: makeCrateFaceTexture(),
+        emissive: 0x8c6a18,
+        emissiveIntensity: 0.06,
+        roughness: 0.5,
+        metalness: 0.02,
+      });
+      const edgeWood = envMat(0xd6b94d, 0x6b4e08, 0.08);
+      const box = new THREE.Mesh(new THREE.BoxGeometry(1.16, 1.16, 1.16), baseWood);
+      group.add(box);
+
+      const addBox = (x, y, z, sx, sy, sz, rx = 0, ry = 0, rz = 0, mat = edgeWood) => {
+        const slat = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
+        slat.position.set(x, y, z);
+        slat.rotation.set(rx, ry, rz);
+        group.add(slat);
+      };
+
+      const e = 0.63;
+      const beam = 0.16;
+      addBox(0, e, e, 1.42, beam, beam);
+      addBox(0, -e, e, 1.42, beam, beam);
+      addBox(0, e, -e, 1.42, beam, beam);
+      addBox(0, -e, -e, 1.42, beam, beam);
+      addBox(e, 0, e, beam, 1.42, beam);
+      addBox(-e, 0, e, beam, 1.42, beam);
+      addBox(e, 0, -e, beam, 1.42, beam);
+      addBox(-e, 0, -e, beam, 1.42, beam);
+      addBox(e, e, 0, beam, beam, 1.42);
+      addBox(-e, e, 0, beam, beam, 1.42);
+      addBox(e, -e, 0, beam, beam, 1.42);
+      addBox(-e, -e, 0, beam, beam, 1.42);
+      return group;
+    }
+
+    const cratePatterns = {
+      lowWide: [[-1.05, 0, 0, 0.04, 1.05], [0.12, 0.02, 0.06, -0.08, 0.95], [1.18, -0.02, -0.04, 0.11, 1.0]],
+      tower: [[0, 0, 0, 0.02, 1.0], [0.08, 1.25, -0.05, -0.12, 0.92], [-0.06, 2.37, 0.04, 0.08, 0.82]],
+      stairLeft: [[-1.05, 0, 0, 0.12, 1.0], [0.05, 0.08, -0.03, -0.04, 0.96], [0.66, 1.2, 0.05, 0.2, 0.86]],
+      stairRight: [[1.05, 0, 0, -0.12, 1.0], [-0.05, 0.08, -0.03, 0.04, 0.96], [-0.66, 1.2, 0.05, -0.2, 0.86]],
+      messy: [[-0.76, 0, 0.04, -0.18, 0.9], [0.72, 0.1, -0.08, 0.16, 1.02], [0.02, 1.2, 0.02, -0.03, 0.88], [0.92, 0.98, 0.58, 0.2, 0.72]],
+      frontCluster: [[-0.72, 0, -0.08, 0.08, 1.0], [0.68, 0, -0.12, -0.12, 0.94], [0.06, 0.06, 0.92, 0.18, 0.88], [0, 1.28, -0.02, -0.04, 0.82]],
+      single: [[0, 0, 0, 0.14, 1.12]],
+    };
+
+    function makeCrateStack(patternName = "lowWide", side = -1, scale = 1.2) {
+      const stack = new THREE.Group();
+      const placements = cratePatterns[patternName] || cratePatterns.lowWide;
+      placements.forEach(([x, y, z, rot, crateScale]) => {
+        const crate = makeWoodCrate();
+        crate.position.set(x, y, z);
+        crate.rotation.y = side < 0 ? 0.2 + rot : -0.2 + rot;
+        crate.rotation.z = rot * 0.18;
+        crate.scale.setScalar(crateScale);
+        stack.add(crate);
+      });
+      stack.scale.setScalar(scale);
+      return stack;
+    }
+
+    function makeGrassTuft(seed = 0) {
+      const group = new THREE.Group();
+      const bladeMatA = new THREE.MeshToonMaterial({ color: 0xf6d54b, gradientMap: null, emissive: 0x6c4f00, emissiveIntensity: 0.08 });
+      const bladeMatB = new THREE.MeshToonMaterial({ color: 0xd9b83a, gradientMap: null, emissive: 0x4a3600, emissiveIntensity: 0.06 });
+      const bladeCount = 3 + (seed % 2);
+      for (let i = 0; i < bladeCount; i++) {
+        const shape = new THREE.Shape();
+        const width = 0.045 + ((seed + i) % 4) * 0.009;
+        const height = 0.34 + ((seed * 7 + i * 5) % 8) * 0.025;
+        shape.moveTo(-width, 0);
+        shape.lineTo(0, height);
+        shape.lineTo(width, 0);
+        shape.closePath();
+        const blade = new THREE.Mesh(
+          new THREE.ShapeGeometry(shape),
+          i % 2 ? bladeMatA : bladeMatB
+        );
+        blade.position.x = (i - (bladeCount - 1) / 2) * 0.055;
+        blade.rotation.y = ((seed + i) % 7 - 3) * 0.18;
+        blade.rotation.z = ((seed * 3 + i) % 5 - 2) * 0.08;
+        blade.rotation.x = -Math.PI / 2 + ((seed + i) % 5 - 2) * 0.05;
+        blade.renderOrder = -2;
+        group.add(blade);
+      }
+      return group;
+    }
+
+    function makeGrassBladeGeometry() {
+      const shape = new THREE.Shape();
+      shape.moveTo(-0.135, 0);
+      shape.lineTo(0, 1.14);
+      shape.lineTo(0.135, 0);
+      shape.closePath();
+      return new THREE.ShapeGeometry(shape);
+    }
+
+    function makeGrassMaterial(rootColor, tipColor) {
+      return new THREE.ShaderMaterial({
+        uniforms: {
+          rootColor: { value: new THREE.Color(rootColor) },
+          tipColor: { value: new THREE.Color(tipColor) },
+          time: worldUniforms.time,
+          grassWind: worldUniforms.grassWind,
+        },
+        vertexShader: `
+          uniform float time;
+          uniform float grassWind;
+          varying float vHeight;
+          void main() {
+            vHeight = clamp(position.y / 1.14, 0.0, 1.0);
+            vec4 worldPos = instanceMatrix * vec4(position, 1.0);
+            float sway = sin(time * 1.6 + worldPos.x * 0.65 + worldPos.z * 0.45) * 0.16;
+            sway += sin(time * 2.7 + worldPos.x * 0.25) * 0.055;
+            worldPos.x += sway * grassWind * vHeight * vHeight;
+            worldPos.z += cos(time * 1.25 + worldPos.x * 0.35) * 0.045 * grassWind * vHeight;
+            gl_Position = projectionMatrix * modelViewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 rootColor;
+          uniform vec3 tipColor;
+          varying float vHeight;
+          void main() {
+            float t = smoothstep(0.0, 1.0, vHeight);
+            vec3 color = mix(rootColor, tipColor, t);
+            gl_FragColor = vec4(color, 1.0);
+          }
+        `,
+        side: THREE.DoubleSide,
+      });
+    }
+
+    function addGrassField() {
+      if (grassField) return;
+      const cols = 112;
+      const rows = 28;
+      const bladesPerCell = 6;
+      const total = cols * rows * bladesPerCell;
+      const bladeGeom = makeGrassBladeGeometry();
+      const matA = makeGrassMaterial(0xb98f18, 0xfff06a);
+      const matB = makeGrassMaterial(0xa97810, 0xf6d54b);
+      const grassA = new THREE.InstancedMesh(bladeGeom, matA, Math.ceil(total / 2));
+      const grassB = new THREE.InstancedMesh(bladeGeom, matB, Math.floor(total / 2));
+      grassA.renderOrder = -2;
+      grassB.renderOrder = -2;
+      const dummy = new THREE.Object3D();
+      let ai = 0;
+      let bi = 0;
+      for (let ix = 0; ix < cols; ix++) {
+        for (let iz = 0; iz < rows; iz++) {
+          const seed = ix * 31 + iz * 17;
+          const x = -23.2 + ix * 0.42 + ((seed % 11) - 5) * 0.03;
+          const z = -7.5 + iz * 0.54 + (((seed * 3) % 13) - 6) * 0.026;
+          for (let b = 0; b < bladesPerCell; b++) {
+            const bladeSeed = seed + b * 19;
+            dummy.position.set(
+              x + (b - 2.5) * 0.055 + ((bladeSeed % 7) - 3) * 0.011,
+              -1.98,
+              z + (((bladeSeed * 5) % 9) - 4) * 0.018
+            );
+            dummy.rotation.set(
+              ((bladeSeed % 5) - 2) * 0.08,
+              (bladeSeed % 31) * 0.2,
+              ((bladeSeed % 7) - 3) * 0.12
+            );
+            const scale = 0.72 + (bladeSeed % 9) * 0.035;
+            dummy.scale.set(scale * (0.78 + b * 0.08), scale, scale);
+            dummy.updateMatrix();
+            if ((bladeSeed + b) % 2 === 0 && ai < grassA.count) grassA.setMatrixAt(ai++, dummy.matrix);
+            else if (bi < grassB.count) grassB.setMatrixAt(bi++, dummy.matrix);
+          }
+        }
+      }
+      grassA.count = ai;
+      grassB.count = bi;
+      grassA.instanceMatrix.needsUpdate = true;
+      grassB.instanceMatrix.needsUpdate = true;
+      grassField = new THREE.Group();
+      grassField.name = "grassField";
+      grassField.add(grassA, grassB);
+      backgroundScene.add(grassField);
+    }
+
+    function setGrassEnabled(enabled) {
+      if (enabled) {
+        addGrassField();
+        if (grassField) grassField.visible = true;
+      } else if (grassField) {
+        grassField.visible = false;
+      }
+    }
+
+    function addEnvironment() {
+      const signLeft = makeLemonSlice(0.58);
+      signLeft.position.set(-5.9, 2.1, -1.4);
+      signLeft.rotation.set(0.15, 0.45, 0.1);
+      const signRight = makeLemonSlice(0.58);
+      signRight.position.set(5.9, 2.1, -1.4);
+      signRight.rotation.set(0.15, -0.45, -0.1);
+      backgroundScene.add(signLeft, signRight);
+      environmentItems.push({ mesh: signLeft, spin: 0.18, bob: 0.18, baseY: signLeft.position.y });
+      environmentItems.push({ mesh: signRight, spin: -0.18, bob: 0.18, baseY: signRight.position.y });
+
+      [-7.2, -6.65, 6.65, 7.2].forEach((x, i) => {
+        const can = makeSodaCan(i < 2 ? 0x1f7be0 : 0xe23b2c);
+        can.position.set(x, -1.55, -2.3 - (i % 2) * 0.35);
+        can.rotation.set(0.15, x < 0 ? -0.35 : 0.35, (i % 2 ? -0.08 : 0.08));
+        can.scale.setScalar(1.25);
+        backgroundScene.add(can);
+        environmentItems.push({ mesh: can, spin: x < 0 ? 0.08 : -0.08, bob: 0.04, baseY: can.position.y });
+      });
+
+      [
+        { x: -11.1, z: -3.0, side: -1, rot: 0.22, pattern: "stairLeft", scale: 1.34 },
+        { x: 11.1, z: -3.0, side: 1, rot: -0.22, pattern: "stairRight", scale: 1.34 },
+        { x: -13.2, z: -6.0, side: -1, rot: 0.44, pattern: "tower", scale: 1.02 },
+        { x: -9.1, z: -6.7, side: -1, rot: 0.18, pattern: "frontCluster", scale: 1.08 },
+        { x: -5.1, z: -7.25, side: -1, rot: -0.1, pattern: "lowWide", scale: 0.98 },
+        { x: -1.7, z: -7.55, side: -1, rot: 0.06, pattern: "single", scale: 1.02 },
+        { x: 1.7, z: -7.55, side: 1, rot: -0.06, pattern: "single", scale: 0.92 },
+        { x: 5.1, z: -7.25, side: 1, rot: 0.1, pattern: "lowWide", scale: 0.98 },
+        { x: 9.1, z: -6.7, side: 1, rot: -0.18, pattern: "frontCluster", scale: 1.08 },
+        { x: 13.2, z: -6.0, side: 1, rot: -0.44, pattern: "tower", scale: 1.02 },
+      ].forEach(({ x, z, side, rot, pattern, scale }) => {
+        const stack = makeCrateStack(pattern, side, scale);
+        stack.position.set(x, -1.52, z);
+        stack.rotation.y = rot;
+        backgroundScene.add(stack);
+      });
+
+      [
+        { x: -7.2, y: -1.32, z: -5.35, rot: 0.42, scale: 1.08 },
+        { x: 0.2, y: -1.42, z: -6.55, rot: -0.18, scale: 1.0 },
+        { x: 7.0, y: -1.3, z: -5.45, rot: -0.5, scale: 1.12 },
+      ].forEach(({ x, y, z, rot, scale }) => {
+        const lemon = makeBigLemon();
+        lemon.position.set(x, y, z);
+        lemon.rotation.set(0.1, rot, -0.08);
+        lemon.scale.setScalar(scale);
+        backgroundScene.add(lemon);
+      });
+
+      for (let i = 0; i < 28; i++) {
+        const size = 0.04 + Math.random() * 0.08;
+        const bubble = new THREE.Mesh(
+          new THREE.SphereGeometry(size, 12, 12),
+          new THREE.MeshBasicMaterial({
+            color: 0xd8ffff,
+            transparent: true,
+            opacity: 0.35 + Math.random() * 0.35,
+            blending: THREE.AdditiveBlending,
+          })
+        );
+        bubble.position.set(
+          (Math.random() - 0.5) * 13,
+          -1.7 + Math.random() * 5.0,
+          -3.6 - Math.random() * 3.5
+        );
+        bubble.userData = {
+          speed: 0.25 + Math.random() * 0.65,
+          drift: 0.2 + Math.random() * 0.5,
+          phase: Math.random() * Math.PI * 2,
+          baseScale: bubble.scale.x,
+        };
+        backgroundScene.add(bubble);
+        fizzBubbles.push(bubble);
+      }
+
+    }
+
+    function updateEnvironment(t, delta) {
+      worldUniforms.time.value = t;
+      worldUniforms.pulse.value = Math.max(0, worldUniforms.pulse.value - delta * 1.8);
+      const targetWind = grassField && grassField.visible && shouldAnimateGrass() ? 1 : 0;
+      worldUniforms.grassWind.value = THREE.MathUtils.lerp(worldUniforms.grassWind.value, targetWind, delta * 2.5);
+      environmentItems.forEach((item, i) => {
+        item.mesh.rotation.y += item.spin * delta;
+        item.mesh.position.y = item.baseY + Math.sin(t * 1.7 + i) * item.bob;
+      });
+      fizzBubbles.forEach((bubble, i) => {
+        const data = bubble.userData;
+        bubble.position.y += data.speed * delta;
+        bubble.position.x += Math.sin(t * data.drift + data.phase) * delta * 0.16;
+        bubble.scale.setScalar(1 + Math.sin(t * 2.4 + i) * 0.18);
+        if (bubble.position.y > 4.4) {
+          bubble.position.y = -1.8;
+          bubble.position.x = (Math.random() - 0.5) * 13;
+        }
+      });
+    }
+
+    addEnvironment();
+
+    function makeCapsuleMaterial(color) {
+      const base = new THREE.Color(color);
+      const top = base.clone().lerp(new THREE.Color(0xffffff), 0.24);
+      const bottom = base.clone().lerp(new THREE.Color(0x05091a), 0.18);
+      const rim = base.clone().lerp(new THREE.Color(0xefffff), 0.62);
+      return new THREE.ShaderMaterial({
+        uniforms: {
+          time: worldUniforms.time,
+          baseColor: { value: base },
+          topColor: { value: top },
+          bottomColor: { value: bottom },
+          rimColor: { value: rim },
+        },
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vWorld;
+          varying float vY;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vec4 world = modelMatrix * vec4(position, 1.0);
+            vWorld = world.xyz;
+            vY = position.y;
+            gl_Position = projectionMatrix * viewMatrix * world;
+          }
+        `,
+        fragmentShader: `
+          uniform float time;
+          uniform vec3 baseColor;
+          uniform vec3 topColor;
+          uniform vec3 bottomColor;
+          uniform vec3 rimColor;
+          varying vec3 vNormal;
+          varying vec3 vWorld;
+          varying float vY;
+          void main() {
+            vec3 n = normalize(vNormal);
+            vec3 viewDir = normalize(cameraPosition - vWorld);
+            vec3 lightDir = normalize(vec3(-0.35, 0.75, 0.55));
+            float hemi = n.y * 0.5 + 0.5;
+            float lambert = max(dot(n, lightDir), 0.0);
+            float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 2.2);
+            float vertical = smoothstep(-0.6, 1.95, vY);
+            float sheen = smoothstep(0.48, 0.52, sin(vWorld.x * 3.0 + vWorld.y * 2.4 + time * 1.8) * 0.5 + 0.5);
+            vec3 color = mix(bottomColor, topColor, vertical);
+            color *= 0.78 + lambert * 0.34 + hemi * 0.14;
+            color += rimColor * fresnel * 0.38;
+            color += vec3(1.0, 0.95, 0.65) * sheen * 0.055;
+            gl_FragColor = vec4(color, 1.0);
+          }
+        `,
+      });
+    }
 
     // Helpers to create players and props
+    function makeShieldGeometry() {
+      const shape = new THREE.Shape();
+      shape.moveTo(0, -0.82);
+      shape.bezierCurveTo(-0.42, -0.54, -0.62, -0.18, -0.62, 0.36);
+      shape.quadraticCurveTo(-0.62, 0.68, -0.32, 0.78);
+      shape.quadraticCurveTo(0, 0.9, 0.32, 0.78);
+      shape.quadraticCurveTo(0.62, 0.68, 0.62, 0.36);
+      shape.bezierCurveTo(0.62, -0.18, 0.42, -0.54, 0, -0.82);
+      shape.closePath();
+      return new THREE.ExtrudeGeometry(shape, {
+        depth: 0.14,
+        bevelEnabled: true,
+        bevelThickness: 0.035,
+        bevelSize: 0.035,
+        bevelSegments: 3,
+      });
+    }
+
     function makePlayer(color, x) {
       const group = new THREE.Group();
       group.position.set(x, -1.2, 0);
@@ -682,33 +1347,15 @@
       group.rotation.y = Math.sign(x) * 1;
 
     const toonMaterial = (color) => new THREE.MeshToonMaterial({ color, gradientMap: null });
-      const bottleMat = toonMaterial(color);
+      const bottleMat = makeCapsuleMaterial(color);
 
       const body = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.8, 1.6, 24, 32),
+        new THREE.CapsuleGeometry(0.8, 1.62, 36, 64),
         bottleMat
       );
       body.position.y = 1.0;
       group.add(body);
       group.add(makeOutline(body, 1.06, "player"));
-
-      const shoulder = new THREE.Mesh(
-        new THREE.SphereGeometry(0.8, 32, 32),
-        bottleMat
-      );
-      shoulder.position.set(0, 2.0, 0);
-      group.add(shoulder);
-      group.add(makeOutline(shoulder, 1.06, "player"));
-
-      const capMat = toonMaterial(color);
-      const cap = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.45, 0.45, 0.28, 36, 1, true),
-        capMat
-      );
-      cap.position.set(0, 2.55, 0);
-      group.add(cap);
-      group.add(makeOutline(cap, 1.06, "player"));
-      // (grooves removed for cleaner head silhouette)
 
       const label = new THREE.Mesh(
         new THREE.CylinderGeometry(0.86, 0.86, 0.8, 40, 1, true),
@@ -721,7 +1368,6 @@
       );
       label.position.y = 0.95;
       group.add(label);
-      group.add(makeOutline(label, 1.05, "player"));
 
       const belt = new THREE.Mesh(
         new THREE.BoxGeometry(1.2, 0.26, 0.06),
@@ -729,20 +1375,9 @@
       );
       belt.position.set(0, 1.1, 0.9);
       group.add(belt);
-      group.add(makeOutline(belt, 1.05, "player"));
-
-      const gun = new THREE.Mesh(
-        new THREE.BoxGeometry(0.28, 0.3, 1.6),
-        toonMaterial(0x111111)
-      );
-      gun.position.set(x > 0 ? -0.65 : 0.65, 1.3, 0.9);
-      gun.rotation.y = x > 0 ? Math.PI / 7 : -Math.PI / 7;
-      gun.name = "gun";
-      group.add(gun);
-      group.add(makeOutline(gun, 1.05, "player"));
 
       const shield = new THREE.Mesh(
-        new THREE.BoxGeometry(1.2, 1.5, 0.18),
+        makeShieldGeometry(),
         new THREE.MeshToonMaterial({
           color: 0x0ae2ff,
           transparent: true,
@@ -750,12 +1385,18 @@
           side: THREE.DoubleSide,
         })
       );
+      shield.scale.set(1.08, 1.06, 1);
+      shield.rotation.x = 0;
+      shield.position.z -= 0.07;
       shield.position.set(x > 0 ? -0.7 : 0.7, 1.3, 1.05);
       shield.rotation.y = x > 0 ? Math.PI / 7 : -Math.PI / 7;
       shield.visible = false;
       shield.name = "shield";
       group.add(shield);
-      group.add(makeOutline(shield, 1.04, "player"));
+      const shieldOutline = makeOutline(shield, 1.035, "head");
+      shieldOutline.name = "shieldOutline";
+      shieldOutline.visible = false;
+      group.add(shieldOutline);
 
       const chargeGroup = new THREE.Group();
       chargeGroup.name = "chargeGroup";
@@ -802,11 +1443,7 @@
     let nextRoundTimeout = null;
     let celebrateTimer = 0;
     let followTarget = null;
-    let cameraReady = false;
     let hitFreezeTimer = 0;
-    const gestures = { left: null, right: null };
-    const gestureCache = { left: null, right: null }; // keep recent gestures to avoid frame drops
-    const debugState = { left: null, right: null };
 
     function trimPool(arr, max) {
       while (arr.length > max) {
@@ -815,7 +1452,7 @@
       }
     }
 
-    function spawnBullet(fromLeft, willHit, unstoppable = false) {
+    function spawnBullet(fromLeft, willHit, burstShot = false) {
       const geom = new THREE.SphereGeometry(0.2, 28, 28);
       const bullet = new THREE.Mesh(
         geom,
@@ -831,17 +1468,14 @@
         willHit,
         target: fromLeft ? rightPlayer : leftPlayer,
         fromLeft,
-        unstoppable,
+        burstShot,
       };
-      // Outline for visibility
-      const outline = makeOutline(bullet, 1.08, "head");
+      const outline = makeBulletOutline(geom);
+      bullet.add(outline);
       scene.add(bullet);
-      scene.add(outline);
       bullets.push(bullet);
       trimPool(bullets, 24);
-      // Keep outline paired with bullet
       bullet.userData.outline = outline;
-      outline.userData = { bullet };
       spawnSpeedLine(fromLeft);
     }
 
@@ -925,22 +1559,27 @@
 
     function knockBack(player, dir) {
       player.userData.knock = {
-        hold: 0.3,
-        launchX: dir * 100,
-        launchY: 0,
+        hold: 0.2,
+        launchX: dir * 82,
+        launchY: 18,
       };
-      camDistTarget = 18;
+      player.userData.spin = {
+        x: 7 + Math.random() * 3,
+        y: dir * (10 + Math.random() * 4),
+        z: -dir * (5 + Math.random() * 3),
+      };
+      camDistTarget = 12.8;
       camFocusTargetX = player.position.x;
       followTarget = player;
-      player.userData.flightLife = 2.8;
-      cameraKick(1.0);
+      player.userData.flightLife = 1.85;
+      cameraKick(1.25);
       state.waitingReturn = true;
     }
 
     function spawnWinBurst(player) {
       const base = player.position.clone();
       base.y = 1.4;
-      const count = PERF.fx === "minimal" ? 12 : PERF.fx === "low" ? 18 : 50;
+      const count = PERF.fx === "minimal" ? 28 : PERF.fx === "low" ? 36 : 64;
       for (let i = 0; i < count; i++) {
         const drop = new THREE.Mesh(
           new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 12, 12),
@@ -960,13 +1599,67 @@
       }
     }
 
+    function spawnKnockoutBurst(player, dir, isFinal = false) {
+      const base = player.position.clone().add(new THREE.Vector3(0, 1.2, 0.2));
+      spawnShockRing(base, isFinal ? 0xff5548 : 0xffd740, isFinal ? 0.65 : 0.45);
+      spawnResultText(base, isFinal ? "OUT!" : "HIT!", isFinal ? "out" : "win");
+      spawnKnockSpeedLines(dir);
+      if (isFinal) spawnLoseVignette();
+      const count = isFinal ? 24 : 12;
+      for (let i = 0; i < count; i++) {
+        const chip = new THREE.Mesh(
+          new THREE.TetrahedronGeometry(0.08 + Math.random() * 0.08, 0),
+          new THREE.MeshBasicMaterial({
+            color: Math.random() > 0.35 ? 0xffd740 : 0xff5a42,
+            transparent: true,
+            opacity: 0.95,
+            depthWrite: false,
+          })
+        );
+        chip.position.copy(base).add(new THREE.Vector3((Math.random() - 0.5) * 0.7, (Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.5));
+        chip.userData = {
+          vel: new THREE.Vector3(-dir * (2 + Math.random() * 4), 1.2 + Math.random() * 4, (Math.random() - 0.5) * 3),
+          life: 0.8 + Math.random() * 0.45,
+          start: 1.1,
+          spin: new THREE.Vector3(Math.random() * 8, Math.random() * 8, Math.random() * 8),
+        };
+        scene.add(chip);
+        stars.push(chip);
+      }
+    }
+
+    function spawnShockRing(pos, color = 0xffd740, life = 0.45) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.28, 0.62, 40),
+        new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity: 0.9,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        })
+      );
+      ring.position.copy(pos);
+      ring.rotation.x = -Math.PI / 2;
+      ring.userData = { life, start: life };
+      scene.add(ring);
+      barriers.push(ring);
+    }
+
     function triggerCelebrate() {
       const champ = state.pendingCelebrate;
       if (!champ) return;
+      const victory = getVictoryDisplay(state.winner);
+      callEl.textContent = victory.call;
+      statusEl.textContent = "R";
       champ.visible = true;
       champ.userData.celebrate = 2.0;
       spawnWinBurst(champ);
       spawnWinConfetti(champ);
+      spawnShockRing(champ.position.clone().add(new THREE.Vector3(0, 0.7, 0)), 0xfff25a, 0.9);
+      spawnResultText(champ.position.clone().add(new THREE.Vector3(0, 2.7, 0)), victory.result, victory.tone);
+      playCheer();
       focusOn(champ.position.x, 1.2, 7.0);
       cameraKick(0.9);
       state.pendingCelebrate = null;
@@ -982,6 +1675,7 @@
         delete p.userData.knock;
         delete p.userData.celebrate;
         delete p.userData.flightLife;
+        delete p.userData.spin;
         p.rotation.set(0, 0, 0);
         p.visible = true;
       });
@@ -997,34 +1691,25 @@
     function updateChargeOrbs(player, count) {
       const group = player.getObjectByName("chargeGroup");
       if (!group) return;
-      const pairCount = () => Math.floor(group.children.length / 2);
-      while (pairCount() > count) {
-        const outline = group.children.pop();
+      while (group.children.length > count) {
         const orb = group.children.pop();
-        if (outline) group.remove(outline);
         if (orb) group.remove(orb);
       }
-      while (pairCount() < count) {
+      while (group.children.length < count) {
         const orb = new THREE.Mesh(
           new THREE.SphereGeometry(0.2, 24, 24),
           new THREE.MeshToonMaterial({ color: 0x78ff78, emissive: 0x2fbf2f, gradientMap: null })
         );
-        const idx = pairCount();
+        const idx = group.children.length;
         orb.position.set((idx - (count - 1) / 2) * 0.5, 0.6 + Math.sin(idx) * 0.05, 0);
-        const outline = makeOutline(orb, 1.08, "head"); // use headgear outline style for visibility
+        orb.add(makeBulletOutline(orb.geometry, true));
         group.add(orb);
-        group.add(outline);
       }
-      // Sync positions for orbs and outlines (orbs first, outlines follow)
-      for (let i = 0; i < pairCount(); i++) {
-        const orb = group.children[i * 2];
-        const outline = group.children[i * 2 + 1];
+      for (let i = 0; i < group.children.length; i++) {
+        const orb = group.children[i];
         if (orb && orb.isMesh) {
           orb.position.x = (i - (count - 1) / 2) * 0.5;
           orb.position.y = 1.5 + Math.sin(performance.now() * 0.002 + i) * 0.1;
-        }
-        if (outline && outline.isMesh && orb) {
-          outline.position.copy(orb.position);
         }
       }
     }
@@ -1077,6 +1762,8 @@
       winner: null,
       mode: null, // "pvp" or "cpu"
       pendingCelebrate: null,
+      celebrationDelay: 0,
+      finalHitPending: false,
       shieldWhiffs: { left: 0, right: 0 },
       shieldLocked: { left: false, right: false },
       health: { left: 1, right: 1 },
@@ -1093,27 +1780,12 @@
     const statusEl = document.getElementById("status");
     const scoreLeft = document.getElementById("score-left");
     const scoreRight = document.getElementById("score-right");
-    const controlModeLabel = document.getElementById("control-mode-label");
     const startScreen = document.getElementById("start-screen");
     const btn1p = document.getElementById("btn-1p");
     const btn2p = document.getElementById("btn-2p");
-    const btnSettingsStart = document.getElementById("btn-settings");
-    const settingsOverlay = document.getElementById("settings-overlay");
-    const btnSettingsClose = document.getElementById("btn-settings-close");
-    const settingsButtons = document.querySelectorAll("[data-input-mode]");
-    const chkHandLines = document.getElementById("chk-hand-lines");
-    const chkDebug = document.getElementById("chk-debug");
-    const floatingSettingsButton = document.getElementById("settings-button");
-    const inputBadge = document.getElementById("btn-input");
-    const btnReport = document.getElementById("btn-report");
-    const btnImportWeights = document.createElement("button");
-    btnImportWeights.textContent = "ウェイト読込";
-    btnImportWeights.id = "btn-import-weights";
-    btnImportWeights.style.cssText = "padding:4px 10px;font-weight:800;border:none;border-radius:8px;background:#ffe2ff;color:#0b1720;cursor:pointer;display:none;";
-    const hudInputBadge = document.getElementById("hud-input");
-    const camEl = document.getElementById("cam");
-    const lineLeft = document.getElementById("line-left");
-    const lineRight = document.getElementById("line-right");
+    const rightControlCard = document.getElementById("right-control-card");
+    const rightControlTitle = document.getElementById("right-control-title");
+    const rightControlSub = document.getElementById("right-control-sub");
     const shieldMeterLeft = document.getElementById("shield-meter-left");
     const shieldMeterRight = document.getElementById("shield-meter-right");
     // Hide legacy 2D shield meters (now replaced by 3D rings)
@@ -1126,18 +1798,14 @@
     const boostFillLeft = document.getElementById("boost-fill-left");
     const boostFillRight = document.getElementById("boost-fill-right");
     const cpuButtons = document.querySelectorAll("[data-cpu]");
+    const grassToggleButton = document.getElementById("btn-grass-toggle");
     const headButtons = document.querySelectorAll(".pill-head");
     const headLeftLabel = document.getElementById("head-left-label");
     const headRightLabel = document.getElementById("head-right-label");
-    const debugEl = document.getElementById("debug");
-    const debugCanvas = document.getElementById("debug-canvas");
-    const debugCtx = debugCanvas.getContext("2d");
     const configKey = "cc-lemon-settings";
     const config = {
-      inputMode: "keyboard", // keyboard | hand
-      showHandLines: true,
-      showDebug: false,
       headgear: { left: 0, right: 0 },
+      grassEnabled: false,
       cpuWeights: { charge: 0.33, gun: 0.33, guard: 0.34 }, // used in ultra mode
     };
     const headgearNames = [
@@ -1153,7 +1821,6 @@
       "ねじりハチマキ",
       "カウボーイ",
     ];
-    let debugEnabled = false;
 
     function refreshUI(hidden = true) {
       if (!state.headgear) state.headgear = { left: config.headgear.left || 0, right: config.headgear.right || 0 };
@@ -1187,17 +1854,23 @@
     function loadConfig() {
       try {
         const raw = localStorage.getItem(configKey);
-        if (!raw) return;
+        if (!raw) {
+          config.grassEnabled = shouldAutoEnableGrass();
+          return;
+        }
         const stored = JSON.parse(raw);
-        if (stored.inputMode) config.inputMode = stored.inputMode;
-        if (typeof stored.showHandLines === "boolean") config.showHandLines = stored.showHandLines;
-        if (typeof stored.showDebug === "boolean") config.showDebug = stored.showDebug;
         if (stored.headgear) {
           if (typeof stored.headgear.left === "number") config.headgear.left = stored.headgear.left;
           if (typeof stored.headgear.right === "number") config.headgear.right = stored.headgear.right;
         }
+        if (typeof stored.grassEnabled === "boolean") {
+          config.grassEnabled = stored.grassEnabled;
+        } else {
+          config.grassEnabled = shouldAutoEnableGrass();
+        }
       } catch (e) {
-        console.warn("設定の読み込みに失敗しました", e);
+        console.warn("保存データの読み込みに失敗しました", e);
+        config.grassEnabled = shouldAutoEnableGrass();
       }
     }
 
@@ -1205,73 +1878,28 @@
       localStorage.setItem(configKey, JSON.stringify(config));
     }
 
-    function downloadReport() {
-      const report = {
-        time: new Date().toISOString(),
-        mode: state.mode,
-        cpuMode: state.cpuMode,
-        scores: state.scores,
-        winner: state.winner,
-        headgear: { ...state.headgear },
-        history: state.history,
-      };
-      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "cc-lemon-report.json";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
     function updateControlBadges() {
-      const label = config.inputMode === "hand" ? "ハンド" : "キー";
-      controlModeLabel.textContent = label;
-      if (inputBadge) inputBadge.textContent = label;
-      if (hudInputBadge) hudInputBadge.textContent = `入力:${label}`;
-      if (btnReport) btnReport.style.display = "none";
-      if (btnImportWeights) btnImportWeights.style.display = "none";
-      settingsButtons.forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.inputMode === config.inputMode);
-      });
-      chkHandLines.checked = config.showHandLines;
-      chkDebug.checked = config.showDebug;
+      const cpuMode = state.mode === "cpu";
+      if (rightControlCard) rightControlCard.classList.toggle("is-cpu", cpuMode);
+      if (rightControlTitle) rightControlTitle.textContent = cpuMode ? "CPU" : "2P";
+      if (rightControlSub) rightControlSub.textContent = cpuMode ? "自動" : "キーボード";
       headLeftLabel.textContent = headgearNames[config.headgear.left] || "なし";
       headRightLabel.textContent = headgearNames[config.headgear.right] || "なし";
+      updateGrassToggle();
     }
 
-    function openSettings() {
-      settingsOverlay.style.display = "grid";
-      settingsOverlay.setAttribute("aria-hidden", "false");
+    function updateGrassToggle() {
+      if (!grassToggleButton) return;
+      grassToggleButton.textContent = config.grassEnabled ? "ON" : "OFF";
+      grassToggleButton.classList.toggle("active", config.grassEnabled);
+      grassToggleButton.setAttribute("aria-pressed", config.grassEnabled ? "true" : "false");
+      setGrassEnabled(config.grassEnabled);
     }
 
-    function closeSettings() {
-      settingsOverlay.style.display = "none";
-      settingsOverlay.setAttribute("aria-hidden", "true");
-    }
-
-    function toggleHandLines(show) {
-      config.showHandLines = show;
+    function toggleGrass() {
+      config.grassEnabled = !config.grassEnabled;
       saveConfig();
-      updateHandLines();
-    }
-
-    function ensureDebug(target) {
-      if (typeof target === "boolean") {
-        toggleDebug(target);
-      }
-      config.showDebug = debugEnabled;
-      saveConfig();
-    }
-
-    function setInputMode(mode) {
-      if (!mode) return;
-      config.inputMode = mode;
-      saveConfig();
-      updateControlBadges();
-      if (config.inputMode === "hand") {
-        initCamera();
-      }
+      updateGrassToggle();
     }
 
     function setHeadgear(side, dir) {
@@ -1312,8 +1940,6 @@
 
     loadConfig();
     updateControlBadges();
-    toggleHandLines(config.showHandLines);
-    ensureDebug(config.showDebug);
 
     function startSequence() {
       if (state.sequenceRunning || state.winner || state.waitingReturn) return;
@@ -1330,38 +1956,55 @@
       camFocusTargetX = 0;
       camDistTarget = 9.6;
       statusEl.textContent = "";
-      const calls = ["🍋", "🍋🍋", "🍋🍋🍋"];
+      const hardMode = state.mode === "cpu" && state.cpuMode === "hard";
+      const calls = hardMode ? ["C!", "C!", "レモン!"] : ["🍋", "🍋🍋", "🍋🍋🍋"];
       callEl.classList.add("flash");
       callEl.classList.add("call-pop");
-      const bgSteps = [0xf5c000, 0xf5d94c, 0xffe678];
+      const bgSteps = hardMode ? [0xfff08a, 0xfff08a, 0xf5c000] : [0xf5c000, 0xf5d94c, 0xffe678];
       const step = (idx) => {
         if (idx >= calls.length) {
           callEl.classList.remove("flash");
           callEl.classList.remove("call-pop");
           state.sequenceRunning = false;
-          startRound();
+          if (!hardMode) startRound();
           return;
         }
         callEl.textContent = calls[idx];
         statusEl.textContent = "";
-        scene.background = new THREE.Color(bgSteps[idx] || 0xf5c000);
+        backgroundScene.background = new THREE.Color(bgSteps[idx] || 0xf5c000);
+        playClap();
         if (sounds.count) { sounds.count.currentTime = 0; sounds.count.play(); }
-        if (idx === calls.length - 1 && PERF.fx === "high") spawnScreenFlash();
-        cameraKick(0.35, false); // keep UI steady during count
+        if (hardMode && idx < 2) {
+          spawnRhythmFlash();
+          camDistTarget = 8.2;
+          cameraKick(0.55, false);
+        } else if (hardMode) {
+          camDistTarget = 9.6;
+          state.sequenceRunning = false;
+          startRound(true);
+          playDon();
+          cameraKick(0.18, false);
+          return;
+        } else {
+          cameraKick(0.35, false);
+        }
         setTimeout(() => step(idx + 1), 500);
       };
       step(0);
     }
 
-    function startRound() {
+    function startRound(hardTiming = false) {
       state.roundOpen = true;
       statusEl.textContent = "";
-      callEl.textContent = "入力";
+      if (!hardTiming) {
+        callEl.textContent = "入力";
+        playDon();
+      }
       callEl.classList.remove("call-pop");
       void callEl.offsetWidth;
       callEl.classList.add("call-pop");
       clearTimeout(state.timerId);
-      state.timerId = setTimeout(resolveRound, 1800);
+      state.timerId = setTimeout(resolveRound, hardTiming ? 520 : 1800);
       hideShields();
     }
 
@@ -1374,7 +2017,8 @@
       if (!state.choices.left) state.choices.left = "none";
       if (!state.choices.right) state.choices.right = "none";
       const prevScores = { ...state.scores };
-      const outcome = judge(state.choices.left, state.choices.right);
+      const hardMiss = state.mode === "cpu" && state.cpuMode === "hard" && state.choices.left === "none";
+      const outcome = hardMiss ? makeHardMissOutcome() : judge(state.choices.left, state.choices.right);
       state.history.push({
         round: state.history.length + 1,
         leftChoice: state.choices.left,
@@ -1399,6 +2043,33 @@
           nextRoundTimeout = setTimeout(() => startSequence(), 900);
         }
       }
+    }
+
+    function makeHardMissOutcome() {
+      const visuals = {
+        left: null,
+        right: "gun",
+        chargeLeft: false,
+        chargeRight: false,
+        hitLeft: true,
+        hitRight: false,
+        burstLeft: false,
+        burstRight: false,
+        perfectShieldLeft: false,
+        perfectShieldRight: false,
+      };
+      state.scores.right += 1;
+      return {
+        call: "出遅れ",
+        detail: "ハード ペナルティ",
+        visuals,
+        whiffLeft: false,
+        whiffRight: false,
+        guardSuccessLeft: false,
+        guardSuccessRight: false,
+        perfectShieldLeft: false,
+        perfectShieldRight: false,
+      };
     }
 
     function judge(left, right) {
@@ -1456,6 +2127,16 @@
       if (perfectShieldLeft) extra.push("左 ビタミンシールド");
       if (perfectShieldRight) extra.push("右 ビタミンシールド");
 
+      if (leftGunReady && rightGunReady && burstLeft && !burstRight) {
+        state.scores.left += 1;
+        visuals.hitRight = true;
+        return { call: "左ヒット", detail: `${extra.join(" ")} 相殺突破`.trim(), visuals, whiffLeft, whiffRight, guardSuccessLeft, guardSuccessRight, perfectShieldLeft, perfectShieldRight };
+      }
+      if (leftGunReady && rightGunReady && burstRight && !burstLeft) {
+        state.scores.right += 1;
+        visuals.hitLeft = true;
+        return { call: "右ヒット", detail: `${extra.join(" ")} 相殺突破`.trim(), visuals, whiffLeft, whiffRight, guardSuccessLeft, guardSuccessRight, perfectShieldLeft, perfectShieldRight };
+      }
       if (leftGunReady && rightGunReady) {
         return { call: "相殺！", detail: extra.join(" "), visuals, whiffLeft, whiffRight, guardSuccessLeft, guardSuccessRight, perfectShieldLeft, perfectShieldRight };
       }
@@ -1478,11 +2159,12 @@
         return { call: "右 弾なし", detail: "チャージ不足", visuals, whiffLeft, whiffRight, guardSuccessLeft, guardSuccessRight, perfectShieldLeft, perfectShieldRight };
       }
       if (left === "none" && right === "none") {
-        return { call: "静寂", detail: extra.join(" "), visuals, whiffLeft, whiffRight, guardSuccessLeft, guardSuccessRight, perfectShieldLeft, perfectShieldRight };
+        return { call: "待機", detail: extra.join(" "), visuals, whiffLeft, whiffRight, guardSuccessLeft, guardSuccessRight, perfectShieldLeft, perfectShieldRight };
       }
+      const nonHit = describeNonHitOutcome(left, right, whiffLeft, whiffRight);
       return {
-        call: "続行",
-        detail: extra.join(" "),
+        call: nonHit.call,
+        detail: [nonHit.detail, extra.join(" ")].filter(Boolean).join(" "),
         visuals,
         whiffLeft,
         whiffRight,
@@ -1491,6 +2173,18 @@
         perfectShieldLeft,
         perfectShieldRight,
       };
+    }
+
+    function describeNonHitOutcome(left, right, whiffLeft, whiffRight) {
+      const leftCharge = left === "charge";
+      const rightCharge = right === "charge";
+      if (leftCharge && rightCharge) return { call: "チャージ", detail: "両者 レモン補充" };
+      if (leftCharge) return { call: "左チャージ", detail: "左 レモン補充" };
+      if (rightCharge) return { call: "右チャージ", detail: "右 レモン補充" };
+      if (whiffLeft && whiffRight) return { call: "ガード空振り", detail: "両者 守り失敗" };
+      if (whiffLeft) return { call: "左ガード空振り", detail: "左 守り失敗" };
+      if (whiffRight) return { call: "右ガード空振り", detail: "右 守り失敗" };
+      return { call: "待機", detail: "" };
     }
 
     function applyShieldLimits(prevScores, outcome) {
@@ -1532,6 +2226,16 @@
       }
     }
 
+    function getVictoryDisplay(winner) {
+      if (state.mode === "cpu") {
+        return winner === "左"
+          ? { call: "勝ち！", result: "勝ち！", tone: "win" }
+          : { call: "負け！", result: "負け！", tone: "out" };
+      }
+      const playerLabel = winner === "左" ? "1P" : "2P";
+      return { call: `${playerLabel} 勝利！`, result: `${playerLabel} 勝利！`, tone: "win" };
+    }
+
     function checkWinner() {
       const leftDead = state.health.left <= 0;
       const rightDead = state.health.right <= 0;
@@ -1539,55 +2243,30 @@
         if (leftDead && !rightDead) state.winner = "右";
         else if (rightDead && !leftDead) state.winner = "左";
         else state.winner = state.scores.left > state.scores.right ? "左" : "右";
-        callEl.textContent = `${state.winner} 勝利`;
-        statusEl.textContent = "R";
         state.pendingCelebrate = state.winner === "左" ? leftPlayer : rightPlayer;
+        state.finalHitPending = true;
+        state.celebrationDelay = 0;
         if (sounds.win) { sounds.win.currentTime = 0; sounds.win.play(); }
-      if (btnReport) btnReport.style.display = "inline-block";
-        if (btnImportWeights) btnImportWeights.style.display = "inline-block";
       }
     }
 
     function handleKey(e) {
       const key = e.key;
       const code = e.code;
-      if (key === "F3") {
-        toggleDebug();
-        return;
-      }
       if (key.toLowerCase() === "r") {
         resetGame(true);
         return;
       }
-      const leftKeyboardAllowed = config.inputMode === "keyboard";
       if (!state.roundOpen || state.winner) return;
-      if (leftKeyboardAllowed) {
-        const action = mapping.left[key] || mapping.left[key.toLowerCase()] || mapping.left[code];
-        if (action && registerChoice("left", action) && state.mode === "cpu" && !state.choices.right) {
-          scheduleCpuChoice(true);
-        }
+      const action = mapping.left[key] || mapping.left[key.toLowerCase()] || mapping.left[code];
+      if (action && registerChoice("left", action) && state.mode === "cpu" && !state.choices.right) {
+        scheduleCpuChoice(true);
       }
       if (state.mode !== "cpu") {
         const actionR = mapping.right[key] || mapping.right[key.toLowerCase()] || mapping.right[code];
         if (actionR) registerChoice("right", actionR);
       }
       if (state.choices.left && state.choices.right) resolveRound();
-    }
-
-    function toggleDebug(force) {
-      debugEnabled = typeof force === "boolean" ? force : !debugEnabled;
-      camEl.style.display = debugEnabled ? "block" : "none";
-      camEl.style.position = "fixed";
-      camEl.style.right = "10px";
-      camEl.style.top = "10px";
-      camEl.style.width = "240px";
-      camEl.style.borderRadius = "10px";
-      camEl.style.boxShadow = "0 8px 20px rgba(0,0,0,0.35)";
-      camEl.style.pointerEvents = "none";
-      debugEl.style.display = debugEnabled ? "block" : "none";
-      updateDebugPanel();
-      config.showDebug = debugEnabled;
-      saveConfig();
     }
 
     function resetGame(showStart = false) {
@@ -1606,6 +2285,9 @@
       state.roundOpen = false;
       state.sequenceRunning = false;
       state.winner = null;
+      state.pendingCelebrate = null;
+      state.celebrationDelay = 0;
+      state.finalHitPending = false;
       state.history = [];
       timeScale = 1;
       clearTimeout(state.timerId);
@@ -1628,11 +2310,13 @@
     }
 
     function handleVisuals(visuals) {
+      worldUniforms.pulse.value = Math.max(worldUniforms.pulse.value, 0.7);
       hideShields();
       if (visuals.left === "gun") {
         const shots = visuals.burstLeft ? 3 : 1;
         for (let i = 0; i < shots; i++) {
-          const willHit = visuals.hitRight && i === 0;
+          const burstBreaksClash = visuals.burstLeft && visuals.right === "gun" && !visuals.burstRight;
+          const willHit = visuals.hitRight && (burstBreaksClash ? i === 1 : i === 0);
           setTimeout(() => spawnBullet(true, willHit, visuals.burstLeft), i * 90);
         }
         if (sounds.shot) { sounds.shot.currentTime = 0; sounds.shot.play(); }
@@ -1641,7 +2325,8 @@
       if (visuals.right === "gun") {
         const shots = visuals.burstRight ? 3 : 1;
         for (let i = 0; i < shots; i++) {
-          const willHit = visuals.hitLeft && i === 0;
+          const burstBreaksClash = visuals.burstRight && visuals.left === "gun" && !visuals.burstLeft;
+          const willHit = visuals.hitLeft && (burstBreaksClash ? i === 1 : i === 0);
           setTimeout(() => spawnBullet(false, willHit, visuals.burstRight), i * 90);
         }
         if (sounds.shot) { sounds.shot.currentTime = 0; sounds.shot.play(); }
@@ -1665,6 +2350,7 @@
         if (state.shieldLocked.left) flashLockedTint(leftPlayer); // flash angry red when locked and hit
         addStain(leftPlayer);
         spawnStars(leftPlayer.position.clone().add(new THREE.Vector3(0, 1.4, 0)), 5);
+        spawnKnockoutBurst(leftPlayer, -1, state.health.left <= 0);
         focusOn(leftPlayer.position.x, 0.8, 12.0);
         if (sounds.hit) { sounds.hit.currentTime = 0; sounds.hit.play(); }
       }
@@ -1672,6 +2358,7 @@
         if (state.shieldLocked.right) flashLockedTint(rightPlayer);
         addStain(rightPlayer);
         spawnStars(rightPlayer.position.clone().add(new THREE.Vector3(0, 1.4, 0)), 5);
+        spawnKnockoutBurst(rightPlayer, 1, state.health.right <= 0);
         focusOn(rightPlayer.position.x, 0.8, 12.0);
         if (sounds.hit) { sounds.hit.currentTime = 0; sounds.hit.play(); }
       }
@@ -1742,175 +2429,6 @@
       }, delay);
     }
 
-    // Camera/gesture input
-    const HAND_CONNECTIONS = [
-      [0,1],[1,2],[2,3],[3,4], // thumb
-      [0,5],[5,6],[6,7],[7,8], // index
-      [5,9],[9,10],[10,11],[11,12], // middle
-      [9,13],[13,14],[14,15],[15,16], // ring
-      [13,17],[17,18],[18,19],[19,20], // pinky
-      [0,17]
-    ];
-    function initCamera() {
-      if (cameraReady) return;
-      const hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-      });
-      hands.setOptions({
-        maxNumHands: 2,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.6,
-        minTrackingConfidence: 0.6,
-      });
-      hands.onResults(onHands);
-      const cam = new Camera(camEl, {
-        onFrame: async () => {
-          await hands.send({ image: camEl });
-        },
-        width: 640,
-        height: 480,
-      });
-      cam.start();
-      cameraReady = true;
-    }
-
-    function onHands(results) {
-      if (config.inputMode !== "hand") {
-        gestures.left = null;
-        gestures.right = null;
-        updateDebugPanel();
-        drawDebugHands(null, null);
-        return;
-      }
-      debugState.left = null;
-      debugState.right = null;
-      if (!results.multiHandLandmarks || !results.multiHandedness) {
-        updateGesturesFromCache();
-        updateDebugPanel();
-        drawDebugHands(null, null);
-        return;
-      }
-      let bestLeft = null;
-      let recognizedIdx = new Set();
-      results.multiHandLandmarks.forEach((lm, idx) => {
-        const hand = results.multiHandedness[idx];
-        const side = detectSideByPosition(lm); // screen position優先で左右を決める
-        const detail = classifyGestureDetail(lm, hand.label);
-        const now = performance.now();
-        gestureCache[side] = { gesture: detail.gesture, time: now };
-        if (state.mode === "cpu") {
-          if (!bestLeft || detail.span > bestLeft.span) bestLeft = { gesture: detail.gesture, span: detail.span, detail, idx };
-        } else {
-          gestures[side] = detail.gesture;
-          debugState[side] = detail;
-          recognizedIdx.add(idx);
-        }
-      });
-      if (state.mode === "cpu" && bestLeft) {
-        gestures.left = bestLeft.gesture;
-        debugState.left = bestLeft.detail;
-        recognizedIdx.add(bestLeft.idx);
-      } else {
-        updateGesturesFromCache();
-      }
-      if (state.roundOpen) {
-        if (gestures.left) registerChoice("left", gestures.left);
-        if (gestures.right) registerChoice("right", gestures.right);
-        if (state.choices.left && state.choices.right) resolveRound();
-      }
-      updateDebugPanel();
-      drawDebugHands(results, recognizedIdx);
-    }
-
-    function handSpan(lm) {
-      const xs = lm.map((p) => p.x);
-      const ys = lm.map((p) => p.y);
-      return (Math.max(...xs) - Math.min(...xs)) + (Math.max(...ys) - Math.min(...ys));
-    }
-
-    function classifyGestureDetail(lm, handedness) {
-      const span = handSpan(lm);
-      const extended = fingerStates(lm, handedness, span);
-      const extendedCount = Object.values(extended).filter(Boolean).length;
-      const bigSpanOpen = span > 0.32; // spread wide => treat as open hand
-      const gunShape = extended.index && !extended.ring && !extended.pinky && (extended.thumb || !extended.middle || (extended.middle && span < 0.35)); // 指差し/チョキ許容
-      const openHand = extendedCount >= 3 || (extendedCount >= 2 && span > 0.3) || bigSpanOpen; // パー判定さらに緩め
-      const gesture = openHand ? "shield" : gunShape ? "gun" : "charge";
-      return { gesture, extended, span: Number(span.toFixed(3)) };
-    }
-
-    function fingerStates(lm, handedness, span = 0.2) {
-      const margin = span * 0.03 + 0.016; // more forgiving for stretched fingers
-      const wrist = lm[0];
-      const isExtended = (tip, pip, mcp) => {
-        const vertical = lm[tip].y + margin < lm[pip].y;
-        const lifted = lm[tip].y + margin < lm[mcp].y;
-        return vertical || lifted;
-      };
-      const index = isExtended(8, 6, 5);
-      const middle = isExtended(12, 10, 9);
-      const ring = isExtended(16, 14, 13);
-      const pinky = isExtended(20, 18, 17);
-      const thumbTip = lm[4], thumbIP = lm[3], thumbMCP = lm[2];
-      const thumbXOpen = handedness === "Right"
-        ? thumbTip.x + margin < thumbIP.x && thumbTip.x + margin < thumbMCP.x
-        : thumbTip.x - margin > thumbIP.x && thumbTip.x - margin > thumbMCP.x;
-      const thumbAway = Math.abs(thumbTip.y - wrist.y) < 0.2 || Math.abs(thumbTip.x - wrist.x) > 0.08;
-      const thumb = thumbXOpen || thumbAway;
-      return { thumb, index, middle, ring, pinky };
-    }
-
-    function detectSideByPosition(lm) {
-      const avgX = lm.reduce((s, p) => s + p.x, 0) / lm.length;
-      // camera feed is mirrored, so flip the screen side to real side
-      return avgX < 0.5 ? "right" : "left";
-    }
-
-    function updateGesturesFromCache() {
-      const now = performance.now();
-      const hold = 220; // ms hold to bridge dropped frames
-      ["left", "right"].forEach((side) => {
-        const cached = gestureCache[side];
-        if (cached && now - cached.time <= hold) {
-          gestures[side] = cached.gesture;
-        } else {
-          gestures[side] = null;
-        }
-      });
-    }
-
-    function updateDebugPanel() {
-      if (!debugEnabled) return;
-      const fmt = (side) => {
-        const d = debugState[side];
-        if (!d) return "なし";
-        const f = d.extended;
-        const flags = `T:${f.thumb ? 1 : 0} I:${f.index ? 1 : 0} M:${f.middle ? 1 : 0} R:${f.ring ? 1 : 0} P:${f.pinky ? 1 : 0}`;
-        return `${d.gesture} span:${d.span} ${flags}`;
-      };
-      debugEl.textContent = `mode:${state.mode || "-"}\nleft:${fmt("left")}\nright:${fmt("right")}`;
-    }
-
-    function drawDebugHands(results, recognizedIdx) {
-      const w = debugCanvas.width = window.innerWidth;
-      const h = debugCanvas.height = window.innerHeight;
-      debugCtx.clearRect(0, 0, w, h);
-      if (!results || !results.multiHandLandmarks) return;
-      results.multiHandLandmarks.forEach((lm, idx) => {
-        const recognized = recognizedIdx && recognizedIdx.has(idx);
-        const color = recognized ? "rgba(0,255,0,0.9)" : "rgba(255,255,255,0.45)";
-        HAND_CONNECTIONS.forEach(([a, b]) => {
-          const pa = lm[a], pb = lm[b];
-          debugCtx.strokeStyle = color;
-          debugCtx.lineWidth = recognized ? 4 : 2;
-          debugCtx.beginPath();
-          debugCtx.moveTo(pa.x * w, pa.y * h);
-          debugCtx.lineTo(pb.x * w, pb.y * h);
-          debugCtx.stroke();
-        });
-      });
-    }
-
     function flashLockedTint(player, duration = 400) {
       const tint = new THREE.Color(0xff0000);
       // Avoid reapplying while active
@@ -1965,13 +2483,18 @@
     function showShield(player, isLeft, perfect = false, locked = false) {
       const shield = player.getObjectByName("shield");
       if (!shield) return;
+      const shieldOutline = player.getObjectByName("shieldOutline");
       shield.visible = true;
+      if (shieldOutline) shieldOutline.visible = true;
       if (locked) {
         flashLockedTint(player);
       } else {
         applyMembrane(player, perfect ? 2200 : 1500);
       }
-      setTimeout(() => { shield.visible = false; }, 1500);
+      setTimeout(() => {
+        shield.visible = false;
+        if (shieldOutline) shieldOutline.visible = false;
+      }, 1500);
       if (isLeft) player.rotation.y = 0.12;
       else player.rotation.y = -0.12;
       setTimeout(() => { player.rotation.y = 0; }, 400);
@@ -1979,8 +2502,12 @@
     }
 
     function hideShields() {
-      leftPlayer.getObjectByName("shield").visible = false;
-      rightPlayer.getObjectByName("shield").visible = false;
+      [leftPlayer, rightPlayer].forEach((player) => {
+        const shield = player.getObjectByName("shield");
+        const shieldOutline = player.getObjectByName("shieldOutline");
+        if (shield) shield.visible = false;
+        if (shieldOutline) shieldOutline.visible = false;
+      });
     }
 
     function spawnGuardWave(player) {
@@ -2336,6 +2863,10 @@
         const group = ensureShieldMeterGroup(player);
         const locked = !!state.shieldLocked[side];
         const whiffs = state.shieldWhiffs[side] || 0;
+        if (!locked && whiffs <= 0) {
+          group.visible = false;
+          return;
+        }
         const remaining = locked ? 0 : Math.max(0, max - whiffs);
         const pct = max ? remaining / max : 0;
         rebuildShieldMeter(group, pct, locked);
@@ -2371,6 +2902,10 @@
         }
         const gauge = state.boost[side]?.gauge || 0;
         const ready = !!state.boost[side]?.ready;
+        if (gauge <= 0 && !ready) {
+          pill.style.display = "none";
+          return;
+        }
         const pct = Math.min(1, gauge / max) * 100;
         fill.style.height = `${pct}%`;
         pill.classList.toggle("ready", ready);
@@ -2384,23 +2919,104 @@
       update(boostPillRight, boostFillRight, "right", rightPlayer, 1.2);
     }
 
-    function makeOutline(mesh, scale = 1.06, kind = "player") {
-      const outline = mesh.clone();
-      const isPlayer = kind === "player";
-      outline.material = new THREE.MeshBasicMaterial({
-        color: 0x000000,
-        side: isPlayer ? THREE.DoubleSide : THREE.BackSide, // player only: inner+outer lines
+    function makeSingleOutline(mesh, thicknessPx, color, renderOrder) {
+      const outline = new THREE.Mesh(mesh.geometry, null);
+      outline.material = new THREE.ShaderMaterial({
+        uniforms: {
+          outlineColor: { value: new THREE.Color(color) },
+          thicknessPx: { value: thicknessPx },
+          viewport: outlineViewport,
+        },
+        vertexShader: `
+          uniform float thicknessPx;
+          uniform vec2 viewport;
+          void main() {
+            vec4 clip = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            vec3 viewNormal = normalize(normalMatrix * normal);
+            vec4 normalClip = projectionMatrix * vec4((modelViewMatrix * vec4(position, 1.0)).xyz + viewNormal, 1.0);
+            vec2 clipNdc = clip.xy / clip.w;
+            vec2 normalNdc = normalClip.xy / normalClip.w;
+            vec2 dir = normalNdc - clipNdc;
+            float len = length(dir);
+            dir = len > 0.0001 ? dir / len : vec2(0.0, 1.0);
+            vec2 px = (thicknessPx / viewport) * 2.0;
+            clip.xy += dir * px * clip.w;
+            gl_Position = clip;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 outlineColor;
+          void main() {
+            gl_FragColor = vec4(outlineColor, 1.0);
+          }
+        `,
+        side: THREE.BackSide,
         depthWrite: false,
         depthTest: true,
         polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
       });
-      const factor = kind === "head" ? OUTLINE_SCALE_HEAD : OUTLINE_SCALE_PLAYER;
-      outline.scale.multiplyScalar(scale * factor * OUTLINE_SCALE_GLOBAL);
-      // Keep outlines behind their meshes but still above ground (ground depthWrite is off)
-      outline.renderOrder = -0.5;
+      outline.renderOrder = renderOrder;
       return outline;
+    }
+
+    function makeScaledOutline(mesh, scale, color = 0x000000, renderOrder = -0.6) {
+      const outline = new THREE.Mesh(mesh.geometry, new THREE.MeshBasicMaterial({
+        color,
+        side: THREE.BackSide,
+        depthWrite: false,
+        depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
+      }));
+      outline.scale.multiplyScalar(scale);
+      outline.renderOrder = renderOrder;
+      return outline;
+    }
+
+    function makeGeometryOutlineMesh(geometry, scale, color, renderOrder) {
+      const outline = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+        color,
+        side: THREE.BackSide,
+        depthWrite: false,
+        depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
+      }));
+      outline.scale.setScalar(scale);
+      outline.renderOrder = renderOrder;
+      return outline;
+    }
+
+    function makeBulletOutline(geometry, doubleOutline = false) {
+      if (!doubleOutline) {
+        return makeGeometryOutlineMesh(geometry, 1.12, 0x000000, -0.4);
+      }
+      const group = new THREE.Group();
+      group.add(makeGeometryOutlineMesh(geometry, 1.2, 0xffffff, -0.5));
+      group.add(makeGeometryOutlineMesh(geometry, 1.12, 0x000000, -0.4));
+      return group;
+    }
+
+    function makeOutline(mesh, scale = 1.06, kind = "player") {
+      const group = new THREE.Group();
+      group.position.copy(mesh.position);
+      group.quaternion.copy(mesh.quaternion);
+      group.scale.copy(mesh.scale);
+      if (kind === "head") {
+        group.add(makeScaledOutline(mesh, scale + 0.055, 0xffffff, -0.7));
+        group.add(makeScaledOutline(mesh, scale, 0x000000, -0.6));
+        return group;
+      }
+      const factor = kind === "head" ? OUTLINE_SCALE_HEAD : OUTLINE_SCALE_PLAYER;
+      const blackThickness = Math.max(3.5, (scale - 1) * (kind === "player" ? 82 : 60) * factor * OUTLINE_SCALE_GLOBAL);
+      const whiteThickness = blackThickness + (kind === "player" ? 4.5 : 3.2);
+      group.add(makeSingleOutline(mesh, whiteThickness, 0xffffff, -0.7));
+      group.add(makeSingleOutline(mesh, blackThickness, 0x000000, -0.6));
+      return group;
     }
 
     function makeHeadgearMesh(id, sideDir) {
@@ -2431,21 +3047,21 @@
           rim.position.y = -0.06;
           group.add(rim);
           group.add(makeOutline(rim, 1.06, "head"));
-          const base = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.5, 0.7, 9, 1, false), toonMaterial(0xffc933));
-          base.position.y = -0.08;
+          const base = new THREE.Mesh(new THREE.CylinderGeometry(0.61, 0.5, 0.76, 9, 1, false), toonMaterial(0xffc933));
+          base.position.y = -0.05;
           group.add(base);
           group.add(makeOutline(base, 1.06, "head"));
-          const coneGeom = new THREE.ConeGeometry(0.45, 1.1, 16);
+          const coneGeom = new THREE.ConeGeometry(0.34, 0.74, 16);
           const count = 7;
-          const radius = 0.35; // center the spikes
+          const radius = 0.35;
           for (let i = 0; i < count; i++) {
             const ang = (Math.PI * 2 * i) / count;
             const cone = new THREE.Mesh(coneGeom, toonMaterial(0xffd84d));
-            cone.position.set(Math.cos(ang) * radius, 0.35, Math.sin(ang) * radius);
-            const outward = new THREE.Vector3(Math.cos(ang), 2, Math.sin(ang)).normalize(); // tilt outward from center
+            cone.position.set(Math.cos(ang) * radius, 0.6, Math.sin(ang) * radius);
+            const outward = new THREE.Vector3(Math.cos(ang), 3.0, Math.sin(ang)).normalize();
             cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), outward);
             group.add(cone);
-            group.add(makeOutline(cone, 1.2, "head"));
+            group.add(makeOutline(cone, 1.16, "head"));
           }
           break;
         }
@@ -2636,6 +3252,14 @@
       setTimeout(() => flash.remove(), 280);
     }
 
+    function spawnRhythmFlash() {
+      if (!fxLayer) return;
+      const flash = document.createElement("div");
+      flash.className = "fx-flash";
+      flash.style.background = "radial-gradient(circle at 50% 45%, rgba(255,247,154,0.55), rgba(255,230,78,0.18) 58%, rgba(255,230,78,0))";
+      fxLayer.appendChild(flash);
+      setTimeout(() => flash.remove(), 260);
+    }
 
     function spawnImpactAtWorld(vec3) {
       if (PERF.fx !== "high") return;
@@ -2647,6 +3271,26 @@
       impact.style.transform += ` rotate(${Math.random() * 40 - 20}deg)`;
       fxLayer.appendChild(impact);
       setTimeout(() => impact.remove(), 420);
+    }
+
+    function spawnResultText(vec3, text, tone = "win") {
+      if (!fxLayer) return;
+      const s = worldToScreen(vec3);
+      const label = document.createElement("div");
+      label.className = `fx-result ${tone}`;
+      label.textContent = text;
+      label.style.left = `${s.x}px`;
+      label.style.top = `${s.y}px`;
+      fxLayer.appendChild(label);
+      setTimeout(() => label.remove(), 920);
+    }
+
+    function spawnLoseVignette() {
+      if (!fxLayer) return;
+      const vignette = document.createElement("div");
+      vignette.className = "fx-vignette";
+      fxLayer.appendChild(vignette);
+      setTimeout(() => vignette.remove(), 720);
     }
 
     function applyMembrane(player, duration = 600) {
@@ -2697,10 +3341,21 @@
       setTimeout(() => line.remove(), 450);
     }
 
-    function updateHandLines() {
-      if (lineLeft) lineLeft.style.display = "none";
-      if (lineRight) lineRight.style.display = "none";
+    function spawnKnockSpeedLines(dir) {
+      if (!fxLayer) return;
+      for (let i = 0; i < 7; i++) {
+        const line = document.createElement("div");
+        line.className = "fx-speed";
+        line.style.top = `${24 + Math.random() * 52}%`;
+        line.style.left = `${dir > 0 ? 18 + Math.random() * 20 : 62 + Math.random() * 20}%`;
+        line.style.height = `${8 + Math.random() * 10}px`;
+        line.style.opacity = `${0.45 + Math.random() * 0.35}`;
+        line.style.setProperty("--rot", `${dir > 0 ? 2 + Math.random() * 8 : 178 + Math.random() * 8}deg`);
+        fxLayer.appendChild(line);
+        setTimeout(() => line.remove(), 520);
+      }
     }
+
     function cameraKick(power = 0.6, allowShake = true) {
       camPhase = power;
       camShake = allowShake ? Math.max(camShake, power * 0.28) : 0;
@@ -2725,7 +3380,6 @@
           bullet.userData.target = null;
           bullet.userData.willHit = false;
           bullet.userData.life = 1.6;
-          if (bullet.userData.outline) bullet.userData.outline.position.copy(bullet.position);
           spawnGuardWave(defender);
           cameraKick(0.4);
         }
@@ -2733,47 +3387,22 @@
     document.addEventListener("keydown", handleKey);
     btn1p.addEventListener("click", () => startMode("cpu"));
     btn2p.addEventListener("click", () => startMode("pvp"));
-    btnSettingsStart.addEventListener("click", openSettings);
-    floatingSettingsButton.addEventListener("click", openSettings);
-    btnSettingsClose.addEventListener("click", closeSettings);
-    settingsOverlay.addEventListener("click", (e) => {
-      if (e.target === settingsOverlay) closeSettings();
-    });
-    settingsButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        setInputMode(btn.dataset.inputMode);
-        closeSettings();
-      });
-    });
     cpuButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         state.cpuMode = btn.dataset.cpu;
-        cpuButtons.forEach((b) => b.classList.toggle("active", b === btn));
+        updateCpuButtons();
       });
     });
-    cpuButtons.forEach((b) => b.classList.toggle("active", b.dataset.cpu === state.cpuMode));
-    if (btnReport) {
-      btnReport.addEventListener("click", downloadReport);
-    }
-    const keysRow = document.getElementById("keys");
-    if (btnImportWeights && keysRow) {
-      keysRow.appendChild(btnImportWeights);
-      btnImportWeights.addEventListener("click", () => {
-        const input = prompt("ウェイトJSONを貼り付け (例: {\"charge\":0.3,\"gun\":0.4,\"guard\":0.3})");
-        if (!input) return;
-        try {
-          const obj = JSON.parse(input);
-          if (typeof obj.charge === "number" && typeof obj.gun === "number" && typeof obj.guard === "number") {
-            config.cpuWeights = { charge: obj.charge, gun: obj.gun, guard: obj.guard };
-            saveConfig();
-            alert("ウェイトを保存しました。超あたまいいで適用されます。");
-          } else {
-            alert("charge/gun/guard の数値が必要です");
-          }
-        } catch (e) {
-          alert("JSONの形式が不正です");
-        }
+    function updateCpuButtons() {
+      cpuButtons.forEach((b) => {
+        const active = b.dataset.cpu === state.cpuMode;
+        b.classList.toggle("active", active);
+        b.setAttribute("aria-pressed", active ? "true" : "false");
       });
+    }
+    updateCpuButtons();
+    if (grassToggleButton) {
+      grassToggleButton.addEventListener("click", toggleGrass);
     }
     headButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -2782,8 +3411,6 @@
         setHeadgear(side, dir);
       });
     });
-    chkHandLines.addEventListener("change", (e) => toggleHandLines(e.target.checked));
-    chkDebug.addEventListener("change", (e) => ensureDebug(e.target.checked));
     refreshUI(true);
 
     function startMode(mode) {
@@ -2797,7 +3424,7 @@
       state.headgear = { left: config.headgear.left || 0, right: config.headgear.right || 0 };
       attachHeadgear(leftPlayer, state.headgear.left);
       attachHeadgear(rightPlayer, state.headgear.right);
-      if (config.inputMode === "hand") initCamera();
+      updateControlBadges();
       setTimeout(() => startSequence(), 200);
     }
 
@@ -2809,6 +3436,8 @@
       if (hitFreezeTimer > 0) hitFreezeTimer -= raw;
       const localTimeScale = hitFreezeTimer > 0 ? 0.3 : timeScale;
       const delta = raw * localTimeScale;
+      const tNow = performance.now() * 0.001;
+      updateEnvironment(tNow, raw);
       // camera sway
       camPhase = Math.max(0, camPhase - delta);
       camShake = Math.max(0, camShake - delta * 2.8);
@@ -2859,6 +3488,14 @@
           p.position.x += p.userData.kb.x * delta;
           p.position.y += p.userData.kb.y * delta;
           p.userData.kb.x = THREE.MathUtils.lerp(p.userData.kb.x, 0, delta * 0.6);
+          if (p.userData.spin) {
+            p.rotation.x += p.userData.spin.x * delta;
+            p.rotation.y += p.userData.spin.y * delta;
+            p.rotation.z += p.userData.spin.z * delta;
+            p.userData.spin.x = THREE.MathUtils.lerp(p.userData.spin.x, 3, delta * 0.8);
+            p.userData.spin.y = THREE.MathUtils.lerp(p.userData.spin.y, 4 * Math.sign(p.userData.spin.y || 1), delta * 0.8);
+            p.userData.spin.z = THREE.MathUtils.lerp(p.userData.spin.z, 2 * Math.sign(p.userData.spin.z || 1), delta * 0.8);
+          }
           // leave red trails while flying away
           if (p.userData.flightLife !== undefined) {
             const now = performance.now();
@@ -2876,14 +3513,26 @@
           if (p.userData.flightLife !== undefined) {
             p.userData.flightLife -= delta;
             flightActive = true;
-            if (p.userData.flightLife <= 0 && p.visible) {
+            const leftArena = Math.abs(p.position.x) > KNOCKOUT_EXIT_X;
+            if ((p.userData.flightLife <= 0 || leftArena) && p.visible) {
+              const side = p === leftPlayer ? "left" : "right";
+              const isFinalFall = (state.health[side] || 0) <= 0;
+              const exitX = THREE.MathUtils.clamp(p.position.x, -KNOCKOUT_EXIT_X, KNOCKOUT_EXIT_X);
+              const exitPos = p.position.clone();
+              exitPos.x = exitX;
+              spawnShockRing(exitPos.clone().add(new THREE.Vector3(0, 1.0, 0)), isFinalFall ? 0xff5548 : 0xffd740, isFinalFall ? 0.75 : 0.45);
+              if (isFinalFall) spawnResultText(exitPos.clone().add(new THREE.Vector3(0, 2.0, 0)), "DOWN", "out");
               spawnSplash(p);
               p.visible = false;
               p.userData.kb = null;
               p.userData.knock = null;
+              delete p.userData.spin;
               p.userData.flightLife = null;
               followTarget = null;
-              if (state.pendingCelebrate) triggerCelebrate();
+              if (state.pendingCelebrate) {
+                state.finalHitPending = false;
+                state.celebrationDelay = 2.0;
+              }
             }
           }
         } else {
@@ -2896,21 +3545,31 @@
         updateEyes(p, delta);
       });
       if (followTarget && followTarget.visible) {
-        camFocusTargetX = followTarget.position.x;
-        camDistTarget = 14;
-      } else if (state.pendingCelebrate && !flightActive) {
-        triggerCelebrate();
+        camFocusTargetX = THREE.MathUtils.clamp(followTarget.position.x, -ARENA_CAMERA_LIMIT_X, ARENA_CAMERA_LIMIT_X);
+        camDistTarget = 11.8;
+      } else if (state.pendingCelebrate && !state.finalHitPending && !flightActive) {
+        if (state.celebrationDelay > 0) {
+          state.celebrationDelay -= raw;
+          if (state.celebrationDelay > 0) {
+            camFocusTargetX = 0;
+            camDistTarget = 10.2;
+          } else {
+            triggerCelebrate();
+          }
+        } else {
+          triggerCelebrate();
+        }
       }
       updateChargeOrbs(leftPlayer, state.charges.left);
       updateChargeOrbs(rightPlayer, state.charges.right);
 
-      // bullet vs bullet (skip unstoppable)
+      // Bullet clashes remove one projectile from each side. Burst shots are separate
+      // projectiles, so a normal shot only cancels one of the three.
       for (let i = 0; i < bullets.length; i++) {
         for (let j = i + 1; j < bullets.length; j++) {
           const a = bullets[i], b = bullets[j];
           if (!a || !b) continue;
           if (a.userData.fromLeft === b.userData.fromLeft) continue;
-          if (a.userData.unstoppable || b.userData.unstoppable) continue;
           if (a.position.distanceTo(b.position) < 0.45) {
             if (a.userData?.outline) scene.remove(a.userData.outline);
             if (b.userData?.outline) scene.remove(b.userData.outline);
@@ -2928,7 +3587,6 @@
           b.position.y += b.userData.upVel * delta;
           b.userData.upVel -= (b.userData.gravity || 10) * delta;
         }
-        if (b.userData.outline) b.userData.outline.position.copy(b.position);
         b.userData.life -= delta;
         const target = b.userData.target;
         if (target) {
@@ -3023,11 +3681,14 @@
         const s = stars[i];
         s.position.add(s.userData.vel.clone().multiplyScalar(delta));
         s.userData.vel.y -= 10 * delta;
-        s.rotation.x += s.userData.spin.x * delta;
-        s.rotation.y += s.userData.spin.y * delta;
-        s.rotation.z += s.userData.spin.z * delta;
+        const spin = s.userData.spin;
+        if (spin) {
+          s.rotation.x += spin.x * delta;
+          s.rotation.y += spin.y * delta;
+          s.rotation.z += spin.z * delta;
+        }
         s.userData.life -= delta;
-        s.material.opacity = Math.max(0, s.userData.life / s.userData.start);
+        if (s.material) s.material.opacity = Math.max(0, s.userData.life / s.userData.start);
         if (s.userData.life <= 0) {
           scene.remove(s);
           stars.splice(i, 1);
@@ -3108,9 +3769,11 @@
           confettis.splice(i, 1);
         }
       }
-      updateHandLines();
       updateShieldMeters();
       updateBoostUI();
+      renderer.clear(true, true, true);
+      renderer.render(backgroundScene, camera);
+      renderer.clearDepth();
       renderer.render(scene, camera);
     }
     animate();
@@ -3119,8 +3782,7 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      debugCanvas.width = window.innerWidth;
-      debugCanvas.height = window.innerHeight;
+      outlineViewport.value.set(window.innerWidth, window.innerHeight);
     });
   </script>
 </body>
