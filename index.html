@@ -1386,10 +1386,8 @@
         })
       );
       shield.scale.set(1.08, 1.06, 1);
-      shield.rotation.x = 0;
-      shield.position.z -= 0.07;
-      shield.position.set(x > 0 ? -0.7 : 0.7, 1.3, 1.05);
-      shield.rotation.y = x > 0 ? Math.PI / 7 : -Math.PI / 7;
+      shield.position.set(x > 0 ? -0.95 : 0.95, 1.3, 0.82);
+      shield.rotation.y = x > 0 ? -Math.PI / 5 : Math.PI / 5;
       shield.visible = false;
       shield.name = "shield";
       group.add(shield);
